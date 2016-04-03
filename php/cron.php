@@ -20,8 +20,8 @@
 	require "cron_classes.php";
 	
 	
-	//$driver = new mysqli_driver();
-	//$driver->report_mode = MYSQLI_REPORT_ERROR;
+	$driver = new mysqli_driver();
+	$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
 	
 	//password check
