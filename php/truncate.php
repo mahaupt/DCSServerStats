@@ -23,8 +23,8 @@
 	//password check
 	if ($_GET['pw'] != $PASSWORD) die();	
 	
-	$driver = new mysqli_driver();
-	$driver->report_mode = MYSQLI_REPORT_ERROR;
+	//$driver = new mysqli_driver();
+	//$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
 	//establish database connection
 	$mysqli = new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB);
