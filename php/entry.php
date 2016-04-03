@@ -17,7 +17,7 @@
 	// Github Project: https://github.com/cbacon93/DCSServerStats
 	
 	
-	require "config.inc.php";
+	require_once "config.inc.php";
 	
 	//password check
 	if ($_POST['pw'] != $PASSWORD) die();
@@ -46,4 +46,8 @@
 											$_POST['targplayer']);
 	
 	$stmt->execute();
+	
+	
+	//quick and dirty: call cron.php to do an update if necessary
+	include "cron.php"
 ?>

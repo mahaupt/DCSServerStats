@@ -16,16 +16,18 @@
 	//
 	// Github Project: https://github.com/cbacon93/DCSServerStats
 	
-	require "config.inc.php";
-	require "cron_classes.php";
+	require_once "config.inc.php";
+	require_once "cron_functions.inc.php";
 	
 	
 	//$driver = new mysqli_driver();
 	//$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
 	
-	//password check
-	if ($_GET['pw'] != $PASSWORD) die();	
+	//CLI Mode Only !!!
+	if (!isset($argc) || isset($_SERVER['REMOTE_ADDR'])) {
+		die("CLI Only!");
+	}
 	
 	
 	//start parsing
