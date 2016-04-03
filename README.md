@@ -40,8 +40,8 @@ dofile(lfs.writedir()..'Scripts/DCSUDPMissionDataExport.lua') --<-- add this lin
 
 3. Move all PHP Files on your Webserver where your Database is running. Make sure you have the PHP and MySQLi extension installed.
 4. Setup the Database with the DCSServerStats.sql file
-5. Edit cron.php and entry.php, set the user and the passwort for the database access.
-6. Create a .bat or .sh file to run the java program. 
+5. Edit config.inc.php, set the user and the passwort for the database access.
+6. Create a .bat or .sh file to run the java program. The password must be the same as $PASSWORD in your php file
 ```sh
 # java DCSServerStats [BindIP for DCS UDP packets] [Port] [URL to entry.php] [password] 
 
