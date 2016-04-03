@@ -21,7 +21,7 @@
 	require "config.inc.php";
 	
 	//password check
-	if ($_GET['pw'] != $PASSWORD) die();	
+	if (!isset($_GET['pw']) || ($_GET['pw'] !== $PASSWORD)) die();	
 	
 	//$driver = new mysqli_driver();
 	//$driver->report_mode = MYSQLI_REPORT_ERROR;
