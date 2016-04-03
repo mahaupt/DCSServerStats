@@ -25,7 +25,7 @@
 	
 	
 	//password check
-	if ($_GET['pw'] != $PASSWORD) die();	
+	if (!isset($_GET['pw']) || ($_GET['pw'] !== $PASSWORD)) die();		
 	
 	
 	//start parsing
