@@ -14,6 +14,8 @@
 -- limitations under the License.
 
 -- THis is a Modification of the original code from xcom at http://forums.eagle.ru/showthread.php?t=124715&highlight=create+statistics
+--
+-- Github Project: https://github.com/cbacon93/DCSServerStats
 
 
 if CbaconExp==nil then		-- Protection against multiple references (typically wrong script installation)
