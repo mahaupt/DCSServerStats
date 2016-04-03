@@ -23,8 +23,6 @@ import java.io.DataOutputStream;
 import java.net.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.net.ssl.HttpsURLConnection;
-
 
 public class DCSServerStats {
 	String host, port;
@@ -115,7 +113,7 @@ public class DCSServerStats {
 			
 			//url data
 			URL obj = new URL(url);
-			HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
 			//add reuqest header
 			con.setRequestMethod("POST");

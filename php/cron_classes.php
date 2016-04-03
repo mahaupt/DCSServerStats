@@ -204,14 +204,22 @@
 				}
 				
 				//remove takeoff entry
-				$mysqli->query("DELETE FROM dcs_event WHERE id=" . $takeoffevents[$event->InitiatorID] . " LIMIT 1");
+				$mysqli->query("DELETE FROM dcs_events WHERE id=" . $takeoffevents[$event->InitiatorID] . " LIMIT 1");
 				unset($takeoffevents[$event->InitiatorID]);
 			}
 			
 			//flight time illegal time - delete takeoff entry
-			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_TAKEOFF' || $event->event == 'S_EVENT_MISSION_START' || $event->event == 'S_EVENT_BIRTH')) {
-				$mysqli->query("DELETE FROM dcs_event WHERE id=" . $takeoffevents[$event->InitiatorID] . " LIMIT 1");
+			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_TAKEOFF' || $event->event == 'S_EVENT_BIRTH')) {
+				$mysqli->query("DELETE FROM dcs_events WHERE id=" . $takeoffevents[$event->InitiatorID] . " LIMIT 1");
 				unset($takeoffevents[$event->InitiatorID]);
+			}
+			
+			//flight time illegal time - delete takeoff entry
+			//if a new mission starts, all previous takeoffs are invalid
+			if ($event->event == 'S_EVENT_MISSION_START') {
+				$mysqli->query("DELETE FROM dcs_events WHERE id < " . $id);
+				unset($takeoffevents);
+				$takeoffevents = array();
 			}
 		}
 	}
