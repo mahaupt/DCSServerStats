@@ -13,15 +13,11 @@
 	// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	// See the License for the specific language governing permissions and
 	// limitations under the License.
+	//
+	// Github Project: https://github.com/cbacon93/DCSServerStats
 	
-	
+	require "config.inc.php";
 	require "cron_classes.php";
-	
-	$PASSWORD = "waldblick56";
-	$MYSQL_HOST = "127.0.0.1";
-	$MYSQL_USER = "root";
-	$MYSQL_PASS = "";
-	$MYSQL_DB = "DCSServerStats";
 	
 	
 	$driver = new mysqli_driver();
