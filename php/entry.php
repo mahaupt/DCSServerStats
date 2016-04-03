@@ -20,7 +20,7 @@
 	require "config.inc.php";
 	
 	//password check
-	if ($_POST['pw'] != $PASSWORD) die();
+	if (!isset($_GET['pw']) || ($_GET['pw'] !== $PASSWORD)) die();	
 	
 	
 	//establish database connection
