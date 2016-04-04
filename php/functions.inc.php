@@ -66,37 +66,51 @@ function echoPilotsTable($mysqli) {
 		$i++;
 	}
 	
+	if ($i == 0) {
+		echo "<tr><td style='text-align: center' colspan='8'>No Pilots listed</td></tr>";
+	}
+	
 	echo "</table>";
 }
 
 
 function echoPilotStatistic($mysqli, $pilotid) {
-	$prep = $mysqli->prepare("SELECT * FROM pilots WHERE id=?");
+	
+	//get pilot information
+	$prep = $mysqli->prepare("SELECT id, name FROM pilots WHERE id=?");
 	$prep->bind_param('i', $pilotid);
 	$prep->execute();
-	$result = $prep->get_result();
-	$row = $result->fetch_object();
 	
-	echo "Pilot " . $row->name . "<br>";
+	$row = new stdClass();
+	$prep->bind_result($row->id, $row->name);
+	if ($prep->fetch()) {
 	
-	$prep->close();
-	
-	
-	$prep = $mysqli->prepare("SELECT * FROM flights, aircrafts WHERE flights.pilotid=? AND aircrafts.id=flights.aircraftid ORDER BY flights.id DESC LIMIT 10");
-	$prep->bind_param('i', $pilotid);
-	$prep->execute();
-	$result = $prep->get_result();
-	
-	echo "<table class='table_stats'>";
-	echo "<tr class='table_header'><th>Aircraft</th><th>Coalition</th><th>Takeoff</th><th>Landing</th><th>Duration</th><th>Type of Landing</th></tr>";
-	
-	$i = 0;
-	while($row = $result->fetch_object()) {
-		echo "<tr class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->coalition . "</td><td>" . date('G:i d.m.Y', $row->takeofftime) . "</td><td>" . date('G:i d.m.Y', $row->landingtime) . "</td><td>" . timeToString($row->duration) . "</td><td>" . $row->endofflighttype . "</td></tr>";
-		$i++;
+		echo "Pilot " . $row->name . "<br>";
+		$query = "SELECT * FROM flights, aircrafts WHERE flights.pilotid=" . $row->id . " AND aircrafts.id=flights.aircraftid ORDER BY flights.id DESC LIMIT 10";
+		
+		//close pilot information, get flight information
+		$prep->close();
+		$result = $mysqli->query($query);
+		
+		echo "<table class='table_stats'>";
+		echo "<tr class='table_header'><th>Aircraft</th><th>Coalition</th><th>Takeoff</th><th>Landing</th><th>Duration</th><th>Type of Landing</th></tr>";
+		
+		$i = 0;
+		while($row2 = $result->fetch_object()) {
+			echo "<tr class='table_row_" . $i%2 . "'><td>" . $row2->name . "</td><td>" . $row2->coalition . "</td><td>" . date('G:i d.m.Y', $row2->takeofftime) . "</td><td>" . date('G:i d.m.Y', $row2->landingtime) . "</td><td>" . timeToString($row2->duration) . "</td><td>" . $row2->endofflighttype . "</td></tr>";
+			$i++;
+		}
+		
+		if ($i == 0) {
+			echo "<tr><td style='text-align: center' colspan='6'>No Flights listed</td></tr>";
+		}
+		
+		echo "</table>";
+		
+	} else {
+		$prep->close();
+		echo "Pilot not found!";
 	}
-	
-	echo "</table>";
 }
  	
 ?>
