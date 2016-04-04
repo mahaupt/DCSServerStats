@@ -126,7 +126,12 @@ function CbaconExp:onEvent(e)
 	--Initiator variables
 	if e.initiator then
 		if string.sub(e.initiator:getName(),1,string.len("CARGO"))~="CARGO" then
-		
+			
+			--safety - hit building or unmanned vehicle
+			if not e.initiator['getPlayerName'] then
+				return;
+			end
+			
 			--Get initiator player name or AI if NIL
 			if not e.initiator:getPlayerName() then
 				InitPlayer = "AI"
@@ -177,6 +182,12 @@ function CbaconExp:onEvent(e)
 	--Target variables
 	if e.target then
 		if string.sub(e.target:getName(),1,string.len("CARGO"))~="CARGO" then
+			
+			--safety - hit building or unmanned vehicle
+			if not e.target['getPlayerName'] then
+				return;
+			end
+			
 			--Get target player name or AI if NIL
 			if not e.target:getPlayerName() then
 				TargPlayer = "AI"
