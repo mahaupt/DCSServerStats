@@ -47,7 +47,6 @@ dofile(lfs.writedir()..'Scripts/DCSUDPMissionDataExport.lua') --<-- add this lin
 
 java DCSServerStats 127.0.0.1 9182 https://example.com/dcsexport/entry.php secretpassword
 ```
-7. Set a cronjob that runs the cron.php every 15 to 30 minutes to parse the event data
 
 ##Start the Server
 Run the Java Program before starting your DCS server. You can easily do this by creating a .bat/.sh file.
