@@ -129,7 +129,7 @@ function CbaconExp:onEvent(e)
 			
 			--safety - hit building or unmanned vehicle
 			if not e.initiator['getPlayerName'] then
-				return;
+				return
 			end
 			
 			--Get initiator player name or AI if NIL
@@ -185,7 +185,7 @@ function CbaconExp:onEvent(e)
 			
 			--safety - hit building or unmanned vehicle
 			if not e.target['getPlayerName'] then
-				return;
+				return
 			end
 			
 			--Get target player name or AI if NIL
@@ -247,7 +247,7 @@ function CbaconExp:onEvent(e)
 		local sendstr = math.floor(timer.getTime()) .. "," .. WorldEvent .. "," .. InitID_ .. "," .. InitCoa .. "," .. InitGroupCat .. "," .. InitType .. "," .. InitPlayer .. "," .. eWeaponCat .. "," .. eWeaponName .. "," .. TargID_ .. "," .. TargCoa .. "," .. TargGroupCat .. "," .. TargType .. "," .. TargPlayer
 		--env.info(sendstr, true)
 		
-		udp:send(sendstr);
+		udp:send(sendstr)
 	end
 end
 
