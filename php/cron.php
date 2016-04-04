@@ -20,17 +20,18 @@
 	require_once "cron_functions.inc.php";
 	
 	
-	//$driver = new mysqli_driver();
-	//$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
-	
-	//CLI Mode Only !!!
-	if (!isset($argc) || isset($_SERVER['REMOTE_ADDR'])) {
+	//security
+	if ((!isset($argc) || isset($_SERVER['REMOTE_ADDR'])) && !isset($CRON_NO_CLI_SET)) {
 		die("CLI Only!");
 	}
 	
 	
-	//start parsing
+	$driver = new mysqli_driver();
+	$driver->report_mode = MYSQLI_REPORT_ERROR;
+	
+	
+	//sparsing log data
 	$dcs_parser_log = new stdClass();
 	$dcs_parser_log->time = time();
 	$dcs_parser_log->starttimems = microtime(true) * 1000;
@@ -39,6 +40,10 @@
 	//establish database connection
 	$mysqli = new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB);
 	
+	
+	//lock tables
+	//$mysqli->query("LOCK TABLES dcs_events WRITE, pilots READ, aircrafts");
+
 	
 	//get all objects from database
 	$dcs_events = getAllDbObjects($mysqli, "dcs_events");
@@ -55,7 +60,10 @@
 	//delete events
 	deleteProcessedEvents($mysqli);
 	
-		
+	
+	//unlock tables
+	//$mysqli->query("UNLOCK TABLES");
+	
 	
 	//end parsing
 	$dcs_parser_log->endtimems = microtime(true) * 1000;

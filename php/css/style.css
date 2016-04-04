@@ -1,0 +1,30 @@
+body {
+	font-family: Verdana;
+	font-size: 12px;
+}
+
+
+.table_stats {
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+.table_stats td {
+	border: 1px solid black;
+	padding: 5px;
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+.table_stats tr {
+	cursor: pointer;
+}
+
+.table_header {
+	background-color: #CDCDCD;
+}
+
+
+.table_row_0 {
+	background-color: #efefef;
+}

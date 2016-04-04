@@ -16,28 +16,33 @@
 	// limitations under the License.
 	//
 	// Github Project: https://github.com/cbacon93/DCSServerStats
-	
-	
+
+
+
 	require "config.inc.php";
+	require "functions.inc.php";
 	
-	//$driver = new mysqli_driver();
-	//$driver->report_mode = MYSQLI_REPORT_ERROR;
+	$driver = new mysqli_driver();
+	$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
-	//CLI Mode Only !!!
-	//if (!isset($argc) || isset($_SERVER['REMOTE_ADDR'])) {
-	//	die("CLI Only!");
-	//}
 	
-	//establish database connection
 	$mysqli = new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB);
 	
-	$mysqli->query("TRUNCATE TABLE pilots");
-	$mysqli->query("TRUNCATE TABLE aircrafts");
-	$mysqli->query("TRUNCATE TABLE flights");
-	$mysqli->query("TRUNCATE TABLE weapons");
-	$mysqli->query("TRUNCATE TABLE pilot_aircrafts");
-	$mysqli->query("TRUNCATE TABLE dcs_events");
-	$mysqli->query("TRUNCATE TABLE dcs_parser_log");
-	$mysqli->query("TRUNCATE TABLE hitsshotskills");
 	
 ?>
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCSServerStats</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+	  <?php echoSiteContent($mysqli); ?>
+	  <br><br>
+	  <?php echoFooter($mysqli); ?>
+  </body>
+</html>
+

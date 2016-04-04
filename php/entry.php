@@ -20,7 +20,14 @@
 	require_once "config.inc.php";
 	
 	//password check
-	if ($_POST['pw'] != $PASSWORD) die();
+	if ($_POST['pw'] != $PASSWORD) die('wrong pw');
+	//parameter check
+	if ($_POST['size'] <= 0 && $_POST['size'] > 10) die('wrong param');
+	
+	
+	//debugging
+	$driver = new mysqli_driver();
+	$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
 	
 	//establish database connection
@@ -29,25 +36,33 @@
 	$query = "INSERT INTO `dcs_events`(`id`, `time`, `missiontime`, `event`, `InitiatorID`, `InitiatorCoa`, `InitiatorGroupCat`, `InitiatorType`, `InitiatorPlayer`, `WeaponCat`, `WeaponName`, `TargetID`, `TargetCoa`, `TargetGroupCat`, `TargetType`, `TargetPlayer`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	$stmt = $mysqli->prepare($query);
-	$stmt->bind_param("iisissssssissss", $_POST['time'], 
-											$_POST['missiontime'], 
-											$_POST['event'], 
-											$_POST['initid'], 
-											$_POST['initcoa'], 
-											$_POST['initgroupcat'],
-											$_POST['inittype'], 
-											$_POST['initplayer'], 
-											$_POST['eweaponcat'],
-											$_POST['eweaponname'],  
-											$_POST['targid'], 
-											$_POST['targcoa'], 
-											$_POST['targgroupcat'], 
-											$_POST['targtype'], 
-											$_POST['targplayer']);
 	
-	$stmt->execute();
+	$evts = 0;
+	while($evts < $_POST['size']) {
+		$stmt->bind_param("iisissssssissss", $_POST['time_' . $evts], 
+												$_POST['missiontime_' . $evts], 
+												$_POST['event_' . $evts], 
+												$_POST['initid_' . $evts], 
+												$_POST['initcoa_' . $evts], 
+												$_POST['initgroupcat_' . $evts],
+												$_POST['inittype_' . $evts], 
+												$_POST['initplayer_' . $evts], 
+												$_POST['eweaponcat_' . $evts],
+												$_POST['eweaponname_' . $evts],  
+												$_POST['targid_' . $evts], 
+												$_POST['targcoa_' . $evts], 
+												$_POST['targgroupcat_' . $evts], 
+												$_POST['targtype_' . $evts], 
+												$_POST['targplayer_' . $evts]);
+		
+		$stmt->execute();
+		$evts++;
+	}
 	
 	
 	//quick and dirty: call cron.php to do an update if necessary
-	include "cron.php"
+	if ($AUTO_CRON) {
+		$CRON_NO_CLI_SET = true;
+		include "cron.php";
+	}
 ?>

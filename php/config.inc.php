@@ -22,5 +22,5 @@
 	$MYSQL_PASS = "";
 	$MYSQL_DB = "DCSServerStats";
 	
-	
+	$AUTO_CRON = true;
 ?>
