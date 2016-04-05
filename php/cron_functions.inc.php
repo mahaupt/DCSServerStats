@@ -137,6 +137,18 @@
 				//no hit when pilot crashed more than 120 seconds after hit
 				if ($hitevent->time < $event->time - 120) continue;
 				
+				//no hit when target pilot was already killed 60 seconds before (prevent double kill entries)
+				$killtwicetimeout = $hitevent->time - 60;
+				$result = $mysqli->query("SELECT hitsshotskills.id FROM hitsshotskills, pilots WHERE pilots.name='" . $event->InitiatorPlayer . "' AND pilots.id=hitsshotskills.targetPid AND hitsshotskills.time>" . $killtwicetimeout . " AND type='KILL'");
+				if ($result->num_rows > 0) {
+					//add hit to statistics
+					countHit($mysqli, $hitevent);
+	
+					//set to zero - prevent double kill entrys if pilot ejects and AC crashes directly afterwards
+					unset($lasthittable[$event->InitiatorID]);
+					continue;
+				}
+				
 				//add kill to table
 				$mysqli->query("INSERT INTO hitsshotskills (hitsshotskills.time, hitsshotskills.missiontime, hitsshotskills.initiatorCoa, hitsshotskills.targetCoa, hitsshotskills.initiatorAcid, hitsshotskills.initiatorPid, hitsshotskills.targetAcid, hitsshotskills.targetPid, hitsshotskills.weaponid, hitsshotskills.type) SELECT " . $event->time . ", " . $event->missiontime . ", '" . $hitevent->InitiatorCoa . "', '" . $hitevent->TargetCoa . "', ac1.id, p1.id, ac2.id, p2.id, weapons.id, 'KILL' FROM aircrafts AS ac1, aircrafts AS ac2, pilots AS p1, pilots as p2, weapons WHERE ac1.name='" . $hitevent->InitiatorType . "' AND ac2.name='" . $hitevent->TargetType . "' AND p1.name='" . $hitevent->InitiatorPlayer . "' AND p2.name='" . $hitevent->TargetPlayer . "' AND weapons.name='" . $hitevent->WeaponName . "'");
 				
@@ -198,6 +210,57 @@
 	
 	
 	
+	function insertFlight($mysqli, $takeoffevent, $event, $endflightevent = false) {
+		//calculate flight time in seconds
+		$duration = $event->time - $takeoffevent->time;
+		
+		
+		//get end of flight type
+		$eoftype = "UNKNOWN";
+		switch($event->event) {
+			case 'S_EVENT_LAND':
+				$eoftype = "LANDING";
+				break;
+			case 'S_EVENT_CRASH':
+				$eoftype = "CRASH";
+				break;
+			case 'S_EVENT_EJECTION':
+				$eoftype = "EJECTION";
+				break;
+			case 'S_EVENT_DEAD':
+			case 'S_EVENT_PILOT_DEAD':
+				$eoftype = "DEAD";
+				break;
+			case 'S_EVENT_MISSION_END':
+				$eoftype = "MISSION_END";
+				break;
+		}
+		
+		
+		//check for plausible data
+		if ($duration < 12*2600 && $duration > 0 && 
+			(($takeoffevent->InitiatorPlayer == $event->InitiatorPlayer && 
+			$takeoffevent->InitiatorType == $event->InitiatorType && 
+			$event->missiontime > $takeoffevent->missiontime) || $endflightevent)) 
+		{ 
+			//data plausible - add flight to logbook
+			$mysqli->query("UPDATE pilots SET flights = flights + 1, flighttime = flighttime + " . $duration . ", lastactive=" . time() . " WHERE name='" . $takeoffevent->InitiatorPlayer. "' Limit 1");
+			$mysqli->query("UPDATE aircrafts SET flights = flights + 1, flighttime = flighttime + " . $duration . " WHERE name='" . $takeoffevent->InitiatorType . "' Limit 1");
+			$mysqli->query("UPDATE pilot_aircrafts, pilots, aircrafts SET " . 
+				"pilot_aircrafts.flights = pilot_aircrafts.flights + 1, pilot_aircrafts.time = pilot_aircrafts.time + " . $duration . " WHERE " . 
+				"pilot_aircrafts.pilotid=pilots.id AND pilot_aircrafts.aircraftid=aircrafts.id AND pilots.name='" . 
+				$takeoffevent->InitiatorPlayer . "' AND aircrafts.name='" . $takeoffevent->InitiatorType . "'");
+			
+			//insert into flight log
+			$mysqli->query("INSERT INTO flights (flights.pilotid, flights.aircraftid, flights.takeofftime, flights.takeoffmissiontime, flights.landingtime, flights.landingmissiontime, flights.duration, flights.coalition, flights.endofflighttype) SELECT pilots.id, aircrafts.id, " . $takeoffevent->time . ", " . $takeoffevent->missiontime . ", " . $event->time . ", " . $event->missiontime . ", " . $duration . ", '" . $takeoffevent->InitiatorCoa . "', '" . $eoftype . "' FROM pilots, aircrafts WHERE pilots.name='" . $takeoffevent->InitiatorPlayer . "' AND aircrafts.name='" . $takeoffevent->InitiatorType . "'");
+		}
+		
+		//remove takeoff entry
+		$mysqli->query("DELETE FROM dcs_events WHERE id=" . $takeoffevent->id . " LIMIT 1");
+	}
+	
+	
+	
 	function calculateLandingTime($mysqli, $events) {
 		
 		$takeoffevents = array();
@@ -211,57 +274,12 @@
 			}
 			
 			
-			//flight interruption events
+			//flight interruption events - or mission ends (server restarted)
 			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_CRASH' || $event->event == 'S_EVENT_PILOT_DEAD' || $event->event == 'S_EVENT_EJECTION' || $event->event == 'S_EVENT_LAND' || $event->event == 'S_EVENT_CRASH' || $event->event == 'S_EVENT_DEAD')) {
 				
 				$takeoffevent = $events[$takeoffevents[$event->InitiatorID]];
+				insertFlight($mysqli, $takeoffevent, $event);
 				
-				//calculate flight time in seconds
-				$duration = $event->time - $takeoffevent->time;
-				
-				
-				//get end of flight type
-				$eoftype = "UNKNOWN";
-				switch($event->event) {
-					case 'S_EVENT_LAND':
-						$eoftype = "LANDING";
-						break;
-					case 'S_EVENT_CRASH':
-						$eoftype = "CRASH";
-						break;
-					case 'S_EVENT_EJECTION':
-						$eoftype = "EJECTION";
-						break;
-					case 'S_EVENT_DEAD':
-					case 'S_EVENT_PILOT_DEAD':
-						$eoftype = "DEAD";
-						break;
-					case 'S_EVENT_MISSION_END':
-						$eoftype = "MISSION_END";
-						break;
-				}
-				
-				
-				//check for plausible data
-				if ($duration < 12*2600 && $duration > 0 && 
-					$takeoffevent->InitiatorPlayer == $event->InitiatorPlayer && 
-					$takeoffevent->InitiatorType == $event->InitiatorType && 
-					$event->missiontime > $takeoffevent->missiontime) 
-				{ 
-					//data plausible - add flight to logbook
-					$mysqli->query("UPDATE pilots SET flights = flights + 1, flighttime = flighttime + " . $duration . ", lastactive=" . time() . " WHERE name='" . $event->InitiatorPlayer. "' Limit 1");
-					$mysqli->query("UPDATE aircrafts SET flights = flights + 1, flighttime = flighttime + " . $duration . " WHERE name='" . $event->InitiatorType . "' Limit 1");
-					$mysqli->query("UPDATE pilot_aircrafts, pilots, aircrafts SET " . 
-						"pilot_aircrafts.flights = pilot_aircrafts.flights + 1, pilot_aircrafts.time = pilot_aircrafts.time + " . $duration . " WHERE " . 
-						"pilot_aircrafts.pilotid=pilots.id AND pilot_aircrafts.aircraftid=aircrafts.id AND pilots.name='" . 
-						$event->InitiatorPlayer . "' AND aircrafts.name='" . $event->InitiatorType . "'");
-					
-					//insert into flight log
-					$mysqli->query("INSERT INTO flights (flights.pilotid, flights.aircraftid, flights.takeofftime, flights.takeoffmissiontime, flights.landingtime, flights.landingmissiontime, flights.duration, flights.coalition, flights.endofflighttype) SELECT pilots.id, aircrafts.id, " . $takeoffevent->time . ", " . $takeoffevent->missiontime . ", " . $event->time . ", " . $event->missiontime . ", " . $duration . ", '" . $event->InitiatorCoa . "', '" . $eoftype . "' FROM pilots, aircrafts WHERE pilots.name='" . $event->InitiatorPlayer . "' AND aircrafts.name='" . $event->InitiatorType . "'");
-				}
-				
-				//remove takeoff entry
-				$mysqli->query("DELETE FROM dcs_events WHERE id=" . $takeoffevents[$event->InitiatorID] . " LIMIT 1");
 				unset($takeoffevents[$event->InitiatorID]);
 			}
 			
@@ -277,10 +295,21 @@
 				}
 			}
 			
-			//flight time illegal time - delete takeoff entry
+			//flight time illegal time - delete all takeoff entry
 			//if a new mission starts, all previous takeoffs are invalid
-			if ($event->event == 'S_EVENT_MISSION_START' || $event->event == 'S_EVENT_MISSION_END') {
+			if ($event->event == 'S_EVENT_MISSION_START') {
 				$mysqli->query("DELETE FROM dcs_events WHERE event='S_EVENT_TAKEOFF' AND id<" . $id);
+				unset($takeoffevents);
+				$takeoffevents = array();
+			}
+			
+			//flight time end, entry all pilot times
+			if ($event->event == 'S_EVENT_MISSION_END') {
+				foreach($takeoffevents as $id) {
+					$takeoffevent = $events[$id];
+					insertFlight($mysqli, $takeoffevent, $event, true);
+				}
+				
 				unset($takeoffevents);
 				$takeoffevents = array();
 			}

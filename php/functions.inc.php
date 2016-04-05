@@ -50,6 +50,8 @@ function echoFooter($mysqli) {
 	
 	
 function echoPilotsTable($mysqli) {
+	echo "<h2>Pilots</h2><br><br>";
+	
 	echo "<table class='table_stats'>";
 	echo "<tr class='table_header'><th>Pilot</th><th>Flights</th><th>Flight time</th><th>Kills</th><th>Ejections</th><th>Crashes</th><th>last active</th><th>status</th></tr>";
 	
@@ -74,39 +76,104 @@ function echoPilotsTable($mysqli) {
 }
 
 
+
+function echoPilotsFlightsTable($mysqli, $pilotid) {	
+	$result = $mysqli->query("SELECT * FROM flights, aircrafts WHERE flights.pilotid=" . $pilotid . " AND aircrafts.id=flights.aircraftid ORDER BY flights.id DESC LIMIT 10");
+	
+	echo "<table class='table_stats'>";
+	echo "<tr class='table_header'><th>Aircraft</th><th>Coalition</th><th>Takeoff</th><th>Landing</th><th>Duration</th><th>Type of Landing</th></tr>";
+	
+	$i = 0;
+	while($row2 = $result->fetch_object()) {
+		echo "<tr class='table_row_" . $i%2 . "'><td>" . $row2->name . "</td><td>" . $row2->coalition . "</td><td>" . date('H:i d.m.Y', $row2->takeofftime) . "</td><td>" . date('H:i d.m.Y', $row2->landingtime) . "</td><td>" . timeToString($row2->duration) . "</td><td>" . $row2->endofflighttype . "</td></tr>";
+		$i++;
+	}
+	
+	if ($i == 0) {
+		echo "<tr><td style='text-align: center' colspan='6'>No Flights listed</td></tr>";
+	}
+	
+	echo "</table><br><br>";
+
+}
+
+
+function echoPilotsAircraftsTable($mysqli, $pilotid) {
+	$result = $mysqli->query("SELECT pilot_aircrafts.flights, aircrafts.name, pilot_aircrafts.time, pilot_aircrafts.ejects, pilot_aircrafts.crashes, pilot_aircrafts.kills FROM pilot_aircrafts, aircrafts WHERE pilot_aircrafts.pilotid=" . $pilotid . " AND pilot_aircrafts.aircraftid=aircrafts.id ORDER BY pilot_aircrafts.time DESC");
+	
+	echo "<table class='table_stats'>";
+	echo "<tr class='table_header'><th>Aircraft</th><th>Flights</th><th>Flight time</th><th>Kills</th><th>Ejections</th><th>Crashes</th></tr>";
+	
+	$i = 0;
+	while($row = $result->fetch_object()) {
+		echo "<tr class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->flights . "</td><td>" . timeToString($row->time) . "</td><td>" . $row->kills . "</td><td>" . $row->ejects . "</td><td>" . $row->crashes . "</td></tr>";
+		$i++;
+	}
+	
+	
+	echo "</table><br><br>";
+}
+
+
+function echoActiveFlight($mysqli, $pilotid) {
+	$prep = $mysqli->prepare("SELECT dcs_events.InitiatorCoa, dcs_events.InitiatorType, dcs_events.time FROM pilots, dcs_events WHERE pilots.id=? AND dcs_events.event='S_EVENT_TAKEOFF' AND dcs_events.InitiatorPlayer=pilots.name ORDER BY dcs_events.id DESC LIMIT 1");
+	$prep->bind_param('i', $pilotid);
+	$prep->execute();
+
+	$row = new stdClass();
+	$prep->bind_result($row->coalition, $row->actype, $row->time);
+	
+	if ($prep->fetch()) {
+		$duration = time() - $row->time;
+		echo "<b>Active Flight:</b> <br>";
+		echo "<table class='table_stats'><tr class='table_header'><th>Aircraft</th><th>Coalition</th><th>Takeoff</th><th>Duration</th></tr>";
+		echo "<tr><td>" . $row->actype . "</td><td>" . $row->coalition . "</td>";
+		echo "<td>" . date('H:i d.m.Y', $row->time) . "</td>";
+		echo "<td><p class='js_timer'>" . timeToString($duration) . "</p></td></tr></table>";
+			
+		echo "<br><br>";
+	}
+	$prep->close();
+}
+
+
 function echoPilotStatistic($mysqli, $pilotid) {
 	
 	//get pilot information
-	$prep = $mysqli->prepare("SELECT id, name FROM pilots WHERE id=?");
+	$prep = $mysqli->prepare("SELECT id, name, flighttime, flights, lastactive, online FROM pilots WHERE id=?");
 	$prep->bind_param('i', $pilotid);
 	$prep->execute();
 	
 	$row = new stdClass();
-	$prep->bind_result($row->id, $row->name);
+	$prep->bind_result($row->id, $row->name, $row->flighttime, $row->flights, $row->lastactive, $row->online);
 	if ($prep->fetch()) {
-	
-		echo "Pilot " . $row->name . "<br>";
-		$query = "SELECT * FROM flights, aircrafts WHERE flights.pilotid=" . $row->id . " AND aircrafts.id=flights.aircraftid ORDER BY flights.id DESC LIMIT 10";
 		
-		//close pilot information, get flight information
+		$pilotid = $row->id;
+		$online = $row->online;
+		$onlinestatus = "<p class='pilot_offline'>On the Ground</p>";
+		if ($row->online == 1)
+			$onlinestatus = "<p class='pilot_online'>Flying</p>";
+		
+		echo "<h2>Pilot " . $row->name . "</h2><br><br>";
+		echo "<table class='table_stats'><tr class='table_row_0'><td>Total Flight Time: </td><td>" . timeToString($row->flighttime) . "</td></tr>";
+		echo "<tr class='table_row_1'><td>Flights: </td><td>" . $row->flights . "</td></tr>";
+		echo "<tr class='table_row_0'><td>Last Activity: </td><td>" . date('d.m.Y', $row->lastactive) . "</td></tr>";
+		echo "<tr class='table_row_1'><td>Status: </td><td>" . $onlinestatus . "</td></tr></table>";
+		echo "<br><br>";
+		
 		$prep->close();
-		$result = $mysqli->query($query);
 		
-		echo "<table class='table_stats'>";
-		echo "<tr class='table_header'><th>Aircraft</th><th>Coalition</th><th>Takeoff</th><th>Landing</th><th>Duration</th><th>Type of Landing</th></tr>";
-		
-		$i = 0;
-		while($row2 = $result->fetch_object()) {
-			echo "<tr class='table_row_" . $i%2 . "'><td>" . $row2->name . "</td><td>" . $row2->coalition . "</td><td>" . date('G:i d.m.Y', $row2->takeofftime) . "</td><td>" . date('G:i d.m.Y', $row2->landingtime) . "</td><td>" . timeToString($row2->duration) . "</td><td>" . $row2->endofflighttype . "</td></tr>";
-			$i++;
+		//try to print active flight
+		if ($online == 1) {
+			echoActiveFlight($mysqli, $pilotid);
 		}
 		
-		if ($i == 0) {
-			echo "<tr><td style='text-align: center' colspan='6'>No Flights listed</td></tr>";
-		}
+		echo "<b>Last Flights:</b>";
+		echoPilotsFlightsTable($mysqli, $pilotid);
 		
-		echo "</table>";
-		
+		echo "<b>Flown Airplanes</b>";
+		echoPilotsAircraftsTable($mysqli, $pilotid);
+				
 	} else {
 		$prep->close();
 		echo "Pilot not found!";

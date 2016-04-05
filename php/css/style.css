@@ -3,13 +3,21 @@ body {
 	font-size: 12px;
 }
 
+p {
+	margin: 0px;
+}
+
+p.pilot_online {
+	color: green;
+	font-weight: bold;
+}
 
 .table_stats {
 	border-spacing: 0px;
 	border-collapse: collapse;
 }
 
-.table_stats td {
+.table_stats td, th {
 	border: 1px solid black;
 	padding: 5px;
 	padding-left: 20px;
