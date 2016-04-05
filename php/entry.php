@@ -20,7 +20,7 @@
 	require_once "config.inc.php";
 	
 	//password check
-	if ($_POST['pw'] != $PASSWORD) die();
+	if (!isset($_GET['pw']) || ($_GET['pw'] !== $PASSWORD)) die();	
 	//parameter check
 	if ($_POST['size'] <= 0 && $_POST['size'] > 10) die('wrong param');
 	
