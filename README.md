@@ -45,7 +45,7 @@ dofile(lfs.writedir()..'Scripts/DCSUDPMissionDataExport.lua') --<-- add this lin
 ```sh
 # java DCSServerStats [BindIP for DCS UDP packets] [Port] [URL to entry.php] [password] 
 
-java DCSServerStats 127.0.0.1 9182 https://example.com/dcsexport/entry.php secretpassword
+java -jar DCSServerStats.jar 127.0.0.1 9182 https://example.com/dcsexport/entry.php secretpassword
 ```
 
 ##Start the Server
