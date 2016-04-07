@@ -268,7 +268,7 @@
 		foreach($events as $id=>$event) {
 			
 			//save takeoff events
-			if (!array_key_exists($event->InitiatorID, $takeoffevents) && $event->event == 'S_EVENT_TAKEOFF') {
+			if (!array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_TAKEOFF' || $event->event == 'S_EVENT_TOOK_CONTROL')) {
 				$takeoffevents[$event->InitiatorID] = $id;
 				continue;
 			}
@@ -284,12 +284,12 @@
 			}
 			
 			//flight time illegal time - delete takeoff entry
-			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_TAKEOFF' || $event->event == 'S_EVENT_BIRTH')) {
+			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_TAKEOFF' || $event->event == 'S_EVENT_BIRTH' || $event->event == 'S_EVENT_TOOK_CONTROL')) {
 				$mysqli->query("DELETE FROM dcs_events WHERE id=" . $takeoffevents[$event->InitiatorID] . " LIMIT 1");
 				unset($takeoffevents[$event->InitiatorID]);
 				
 				//new takeoff
-				if ($event->event == 'S_EVENT_TAKEOFF') {
+				if ($event->event == 'S_EVENT_TAKEOFF' || $event->event == 'S_EVENT_TOOK_CONTROL') {
 					$takeoffevents[$event->InitiatorID] = $id;
 					continue;
 				}
@@ -298,7 +298,7 @@
 			//flight time illegal time - delete all takeoff entry
 			//if a new mission starts, all previous takeoffs are invalid
 			if ($event->event == 'S_EVENT_MISSION_START') {
-				$mysqli->query("DELETE FROM dcs_events WHERE event='S_EVENT_TAKEOFF' AND id<" . $id);
+				$mysqli->query("DELETE FROM dcs_events WHERE event IN ('S_EVENT_TAKEOFF', 'S_EVENT_TOOK_CONTROL') AND id<" . $id);
 				unset($takeoffevents);
 				$takeoffevents = array();
 			}
@@ -327,6 +327,6 @@
 	
 	
 	function deleteProcessedEvents($mysqli) {
-		$mysqli->query("DELETE FROM dcs_events WHERE event NOT IN ('S_EVENT_TAKEOFF', 'S_EVENT_HIT')");
+		$mysqli->query("DELETE FROM dcs_events WHERE event NOT IN ('S_EVENT_TAKEOFF', 'S_EVENT_HIT', 'S_EVENT_TOOK_CONTROL')");
 	}
 ?>

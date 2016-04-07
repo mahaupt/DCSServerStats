@@ -43,7 +43,7 @@ dofile(lfs.writedir()..'Scripts/DCSUDPMissionDataExport.lua') --<-- add this lin
 5. Edit config.inc.php, set the user and the passwort for the database access.
 6. Create a .bat or .sh file to run the java program. The password must be the same as $PASSWORD in your php file
 ```sh
-# java DCSServerStats [BindIP for DCS UDP packets] [Port] [URL to entry.php] [password] 
+# java -jar DCSServerStats.jar [BindIP for DCS UDP packets] [Port] [URL to entry.php] [password] 
 
 java -jar DCSServerStats.jar 127.0.0.1 9182 https://example.com/dcsexport/entry.php secretpassword
 ```

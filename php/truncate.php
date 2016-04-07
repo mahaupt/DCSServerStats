@@ -24,9 +24,9 @@
 	//$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
 	//CLI Mode Only !!!
-	//if (!isset($argc) || isset($_SERVER['REMOTE_ADDR'])) {
-	//	die("CLI Only!");
-	//}
+	if (!isset($argc) || isset($_SERVER['REMOTE_ADDR'])) {
+		die("CLI Only!");
+	}
 	
 	//establish database connection
 	$mysqli = new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB);

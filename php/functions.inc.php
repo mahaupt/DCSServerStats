@@ -18,10 +18,30 @@
 
 	
 	
-function echoSiteContent($mysqli) {
-	if (isset($_GET['pid'])) {
+function echoSiteContent($mysqli) 
+{
+	if (isset($_GET['pid'])) 
+	{
 		echoPilotStatistic($mysqli, $_GET['pid']);
-	} else {
+	} 
+	else if (isset($_GET['flights'])) 
+	{
+		echo "<h2>Flights</h2><br><br>";
+		echoFlightsTable($mysqli);
+	} 
+	else if (isset($_GET['aircrafts'])) 
+	{
+		echo "<h2>Aircrafts</h2><br><br>";
+		echoAircraftsTable($mysqli);
+	} 
+	else if (isset($_GET['weapons'])) 
+	{
+		echo "<h2>Weapons</h2><br><br>";
+		echoWeaponsTable($mysqli);
+	} 
+	else 
+	{
+		echo "<h2>Pilots</h2><br><br>";
 		echoPilotsTable($mysqli);
 	}
 }
@@ -50,8 +70,6 @@ function echoFooter($mysqli) {
 	
 	
 function echoPilotsTable($mysqli) {
-	echo "<h2>Pilots</h2><br><br>";
-	
 	echo "<table class='table_stats'>";
 	echo "<tr class='table_header'><th>Pilot</th><th>Flights</th><th>Flight time</th><th>Kills</th><th>Ejections</th><th>Crashes</th><th>last active</th><th>status</th></tr>";
 	
@@ -85,7 +103,7 @@ function echoPilotsFlightsTable($mysqli, $pilotid) {
 	
 	$i = 0;
 	while($row2 = $result->fetch_object()) {
-		echo "<tr class='table_row_" . $i%2 . "'><td>" . $row2->name . "</td><td>" . $row2->coalition . "</td><td>" . date('H:i d.m.Y', $row2->takeofftime) . "</td><td>" . date('H:i d.m.Y', $row2->landingtime) . "</td><td>" . timeToString($row2->duration) . "</td><td>" . $row2->endofflighttype . "</td></tr>";
+		echo "<tr class='table_row_" . $i%2 . "'><td>" . $row2->name . "</td><td>" . $row2->coalition . "</td><td>" . date('d.m.Y - H:i', $row2->takeofftime) . "</td><td>" . date('d.m.Y - H:i', $row2->landingtime) . "</td><td>" . timeToString($row2->duration) . "</td><td>" . $row2->endofflighttype . "</td></tr>";
 		$i++;
 	}
 	
@@ -94,7 +112,26 @@ function echoPilotsFlightsTable($mysqli, $pilotid) {
 	}
 	
 	echo "</table><br><br>";
+}
 
+
+function echoFlightsTable($mysqli) {	
+	$result = $mysqli->query("SELECT flights.*, aircrafts.*, pilots.name as pname, pilots.id as pid FROM flights, aircrafts, pilots WHERE pilots.id=flights.pilotid AND aircrafts.id=flights.aircraftid ORDER BY flights.id DESC LIMIT 30");
+	
+	echo "<table class='table_stats'>";
+	echo "<tr class='table_header'><th>Pilot</th><th>Aircraft</th><th>Coalition</th><th>Takeoff</th><th>Landing</th><th>Duration</th><th>Type of Landing</th></tr>";
+	
+	$i = 0;
+	while($row2 = $result->fetch_object()) {
+		echo "<tr onclick=\"window.document.location='?pid=" . $row2->pid . "'\" class='table_row_" . $i%2 . "'><td>" . $row2->pname . "</td><td>" . $row2->name . "</td><td>" . $row2->coalition . "</td><td>" . date('d.m.Y - H:i', $row2->takeofftime) . "</td><td>" . date('d.m.Y - H:i', $row2->landingtime) . "</td><td>" . timeToString($row2->duration) . "</td><td>" . $row2->endofflighttype . "</td></tr>";
+		$i++;
+	}
+	
+	if ($i == 0) {
+		echo "<tr><td style='text-align: center' colspan='7'>No Flights listed</td></tr>";
+	}
+	
+	echo "</table><br><br>";
 }
 
 
@@ -110,6 +147,30 @@ function echoPilotsAircraftsTable($mysqli, $pilotid) {
 		$i++;
 	}
 	
+	if ($i == 0) {
+		echo "<tr><td style='text-align: center' colspan='6'>No Aircrafts listed</td></tr>";
+	}
+	
+	
+	echo "</table><br><br>";
+}
+
+
+function echoAircraftsTable($mysqli) {
+	$result = $mysqli->query("SELECT aircrafts.flights, aircrafts.name, aircrafts.flighttime, aircrafts.ejects, aircrafts.crashes, aircrafts.kills FROM aircrafts ORDER BY aircrafts.flighttime DESC");
+	
+	echo "<table class='table_stats'>";
+	echo "<tr class='table_header'><th>Aircraft</th><th>Flights</th><th>Flight time</th><th>Kills</th><th>Ejections</th><th>Crashes</th></tr>";
+	
+	$i = 0;
+	while($row = $result->fetch_object()) {
+		echo "<tr class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->flights . "</td><td>" . timeToString($row->flighttime) . "</td><td>" . $row->kills . "</td><td>" . $row->ejects . "</td><td>" . $row->crashes . "</td></tr>";
+		$i++;
+	}
+	
+	if ($i == 0) {
+		echo "<tr><td style='text-align: center' colspan='6'>No Aircrafts listed</td></tr>";
+	}
 	
 	echo "</table><br><br>";
 }
@@ -178,6 +239,26 @@ function echoPilotStatistic($mysqli, $pilotid) {
 		$prep->close();
 		echo "Pilot not found!";
 	}
+}
+
+
+function echoWeaponsTable($mysqli) {
+	$result = $mysqli->query("SELECT * FROM weapons ORDER BY hits DESC");
+	
+	echo "<table class='table_stats'>";
+	echo "<tr class='table_header'><th>Weapon</th><th>Category</th><th>Shots</th><th>Hits</th><th>Kills</th></tr>";
+	
+	$i = 0;
+	while($row = $result->fetch_object()) {
+		echo "<tr class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->type . "</td><td>" . $row->shots . "</td><td>" . $row->hits . "</td><td>" . $row->kills . "</td></tr>";
+		$i++;
+	}
+	
+	if ($i == 0) {
+		echo "<tr><td style='text-align: center' colspan='5'>No Weapons listed</td></tr>";
+	}
+	
+	echo "</table><br><em>Gunshots are not counted.</em><br>";
 }
  	
 ?>

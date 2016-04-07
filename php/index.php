@@ -28,7 +28,6 @@
 	
 	$mysqli = new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB);
 	
-	
 ?>
 
 <!doctype html>
@@ -41,6 +40,10 @@
     <script type="text/javascript" src="css/tools.js"></script>
   </head>
   <body onload="timer()">
+	  <a href="?pilots">Pilots</a> - 
+	  <a href="?flights">Flights</a> - 
+	  <a href="?aircrafts">Aircrafts</a> - 
+	  <a href="?weapons">Weapons</a>
 	  <?php echoSiteContent($mysqli); ?>
 	  <br><br>
 	  <?php echoFooter($mysqli); ?>
