@@ -18,7 +18,7 @@
 if CbaconExp==nil then		-- Protection against multiple references (typically wrong script installation)
 
 
-local UDPip = "127.0.0.1"
+local UDPip = „127.0.0.1“
 local UDPport = "9182"
 
 
@@ -149,10 +149,14 @@ function CbaconExp:onEvent(e)
 			elseif Object.getCategory(e.initiator) == Object.Category.UNIT then
 				local InitGroup = e.initiator:getGroup()
 				InitID_ = e.initiator.id_
-				--InitCoa = SETCoalition[InitGroup:getCoalition()]
-				--InitGroupCat = SETGroupCat[InitGroup:getCategory() + 1]
-				InitCoa = SETCoalition[e.initiator:getCoalition()]
-				InitGroupCat = SETGroupCat[e.initiator:getCategory()]
+				
+				if InitGroup:isExist() then
+					InitCoa = SETCoalition[InitGroup:getCoalition()]
+					InitGroupCat = SETGroupCat[InitGroup:getCategory() + 1]
+				else
+					InitCoa = SETCoalition[e.initiator:getCoalition()]
+					InitGroupCat = SETGroupCat[e.initiator:getCategory()]
+				end
 				InitType = e.initiator:getTypeName()
 				
 				-- Birth event airborne
@@ -214,10 +218,13 @@ function CbaconExp:onEvent(e)
 			elseif Object.getCategory(e.target) == Object.Category.UNIT then
 				local TargGroup = e.target:getGroup()
 				TargID_ = e.target.id_
-				--TargCoa = SETCoalition[TargGroup:getCoalition()]
-				--TargGroupCat = SETGroupCat[TargGroup:getCategory() + 1]
-				TargCoa = SETCoalition[e.target:getCoalition()]
-				TargGroupCat = SETGroupCat[e.target:getCategory()]
+				if TargGroup:isExist() then
+					TargCoa = SETCoalition[TargGroup:getCoalition()]
+					TargGroupCat = SETGroupCat[TargGroup:getCategory() + 1]
+				else
+					TargCoa = SETCoalition[e.target:getCoalition()]
+					TargGroupCat = SETGroupCat[e.target:getCategory()]
+				end
 				TargType = e.target:getTypeName()
 			--if Category is STATIC
 			elseif  Object.getCategory(e.target) == Object.Category.STATIC then
