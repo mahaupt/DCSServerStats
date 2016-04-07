@@ -18,7 +18,7 @@
 // Github Project: https://github.com/cbacon93/DCSServerStats
 
 
-$SMOOTHTIMES = 500;
+$SMOOTHTIMES = 50;
 
 
 if (!isset($argc) || is_null($argc) || isset($_SERVER['REMOTE_ADDR']))
@@ -162,7 +162,7 @@ for ($i = 1; $i < $argc; $i++)
 				$objects[$id] = new stdClass();
 				$objects[$id]->id = $id;
 				$objects[$id]->type = $type;
-				$objects[$id]->parentId = hexdec($split[1]);
+				$objects[$id]->parentId = 0;
 				$objects[$id]->coalitionId = hexdec($split[3]);
 				$objects[$id]->typename = $split[5];
 				$objects[$id]->pilotname = $split[6];
@@ -176,9 +176,19 @@ for ($i = 1; $i < $argc; $i++)
 				$objects[$id]->position = false;
 				$objects[$id]->started = false;
 				$objects[$id]->lastupdate = $missiontime;
+				$objects[$id]->crashed = false;
 
 				
 				$coalitionname = $coalitions[$objects[$id]->coalitionId]->color;
+				
+				
+				
+				//turn AI to AI
+				switch($objects[$id]->pilotname) {
+					case("AWACS - Magic"):
+						$objects[$id]->pilotname = "AI";
+				}
+				
 				
 				//add birth message
 				if ($type == "AIRPLANE" || $type == "HELICOPTER") 
@@ -194,11 +204,30 @@ for ($i = 1; $i < $argc; $i++)
 				$event = hexdec($split[0]);
 				$id = hexdec($split[1]);
 				
-				/*if ($event == hexdec("20") && isset($objects[$id])) {
-					if ($objects[$id]->type == "AIRPLANE" && $objects[$id]->started) {
+				
+				//aircraft crash
+				if ($event == hexdec("20") && isset($objects[$id])) {
+					if ($objects[$id]->type == "AIRPLANE" && $objects[$id]->started && $objects[$id]->alt < 20) {
 						fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_CRASH', " . $id . ", '" . $coalitions[$objects[$id]->coalitionId]->color . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', '" . $objects[$id]->pilotname . "', '', '', 0, '', '', '', ''), \n");
 					}
-				}*/
+				}
+				
+				
+				//missile or shell hit
+				if ($objects[$id]->type == "SHELL" || 
+					$objects[$id]->type == "MISSILE" || 
+					$objects[$id]->type == "BOMB" || 
+					$objects[$id]->type == "ROCKET") 
+				{
+					if ($victim = getClosestObject($missiontime, $objects, $objects[$id], 25)) 
+					{
+						if ($objects[$id]->parentId > 0) {
+							$shooter = $objects[$objects[$id]->parentId];
+							
+							fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_HIT', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', " . $victim->id . ", '" . $coalitions[$victim->coalitionId]->color . "', '" . $victim->type . "', '" . $victim->typename . "', '" . $victim->pilotname . "'), \n");
+						}
+					}
+				}
 			} 
 			//advanced telemetry
 			else if ($line[0] == '@') 
@@ -246,13 +275,13 @@ for ($i = 1; $i < $argc; $i++)
 							$objects[$id]->vel_alt = ($objects[$id]->vel_alt * ($SMOOTHTIMES-1) + $distance_alt / $deltatime) / $SMOOTHTIMES;
 							
 							//start message
-							if ($objects[$id]->type == "AIRPLANE" && !$objects[$id]->started && $objects[$id]->vel > 60) 
+							if ($objects[$id]->type == "AIRPLANE" && !$objects[$id]->started && $objects[$id]->vel > 60 && $objects[$id]->alt > 60) 
 							{
 								$objects[$id]->started = true;
 								fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_TAKEOFF', " . $id . ", '" . $coalitions[$objects[$id]->coalitionId]->color . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', '" . $objects[$id]->pilotname . "', '', '', 0, '', '', '', ''), \n");
 							}
 							//landing message
-							if ($objects[$id]->type == "AIRPLANE" && $objects[$id]->started && $objects[$id]->vel < 40) 
+							if ($objects[$id]->type == "AIRPLANE" && $objects[$id]->started && $objects[$id]->vel < 40 && $objects[$id]->alt < 40) 
 							{
 								$objects[$id]->started = false;
 								fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_LAND', " . $id . ", '" . $coalitions[$objects[$id]->coalitionId]->color . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', '" . $objects[$id]->pilotname . "', '', '', 0, '', '', '', ''), \n");
@@ -265,21 +294,28 @@ for ($i = 1; $i < $argc; $i++)
 					if (!$objects[$id]->position) 
 					{
 						//missile shot - get shooter - add shoot message
-						if ($objects[$id]->type == "MISSILE" || $objects[$id]->type == "ROCKET" || $objects[$id]->type == "BOMB") 
+						if ($objects[$id]->type == "MISSILE" || $objects[$id]->type == "ROCKET" || $objects[$id]->type == "BOMB" || $objects[$id]->type == "SHELL") 
 						{
 							if ($shooter = getClosestObject($missiontime, $objects, $objects[$id])) 
 							{
-								fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_SHOT', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', 0, '', '', '', ''), \n");
+								if ($objects[$id]->type != "SHELL") {
+									fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_SHOT', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', 0, '', '', '', ''), \n");
+								}
+								$objects[$id]->parentId = $shooter->id;
 							}
 						}
 						
 						//ejection - add ejection message
 						if ($objects[$id]->type == "SHRAPNEL" && $objects[$id]->typename == "PILOTACES") 
 						{
-							echo $objects[$id]->parendId . "\n";
 							if ($shooter = getClosestObject($missiontime, $objects, $objects[$id])) 
 							{
 								fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_EJECTION', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '', '', 0, '', '', '', ''), \n");
+								
+								if (!$shooter->crashed) {
+									$shooter->crashed = true;
+									fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_CRASH', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '', '', 0, '', '', '', ''), \n");
+								}
 							}
 						}
 						
@@ -345,7 +381,7 @@ function getClosestObject($misstime, $objects, $object1, $minimum_dist=999999999
 			//get distance
 			$object = extrapolateObjectPosition($misstime, $object);
 			$distance = getCoordDistance($object1->lat, $object1->lon, $object1->alt, $object->lat, $object->lon, $object->alt);
-			echo $object->pilotname . " - " . $distance . "\n";
+			//echo $object->pilotname . " - " . $distance . "\n";
 			
 			//get minimum distance
 			if ($distance < $mindist) 
@@ -368,7 +404,7 @@ function getCoordDistance($lat1, $lon1, $alt1, $lat2, $lon2, $alt2) {
 		
 	$distlon = getDistanceLon($lon1, $lon2, $lat1, $lat2);
 	$distlat = getDistanceLat($lat1, $lat2);
-	$distalt = getDistanceAlt($alt1, $alt2);
+	$distalt = getDistanceAlt($alt1, $alt2)/200;
 	
 	//get distance
 	return sqrt($distlon*$distlon + $distlat*$distlat + $distalt*$distalt);
@@ -384,7 +420,7 @@ function getDistanceAlt($alt1, $alt2) {
 
 function getDistanceLon($lon1, $lon2, $lat1, $lat2) {
 	$medlat = ($lat2 + $lat1) / 2;
-	$loncoeff = cos($medlat/57.2957795131); //medium latitude coefficient
+	$loncoeff = cos($medlat/180*3.14159265); //medium latitude coefficient
 
 	return ($lon2 - $lon1)*$loncoeff*111120;
 }
@@ -393,13 +429,13 @@ function getDistanceLon($lon1, $lon2, $lat1, $lat2) {
 function extrapolateObjectPosition($newmissiontime, $object) {
 	$deltat = $newmissiontime - $object->lastupdate;
 	
-	//if ($deltat > 0 && $object->vel > 0) {
+	if ($deltat > 0 && $object->vel > 0) {
 		$object->lat += $object->vel_lat * ($deltat);
 		$object->lon += $object->vel_lon * ($deltat);
 		$object->alt += $object->vel_alt * ($deltat);
 		$object->lastupdate = $newmissiontime;
 		
-	//}
+	}
 	return $object;
 }
 
