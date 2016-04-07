@@ -177,7 +177,7 @@ function echoAircraftsTable($mysqli) {
 
 
 function echoActiveFlight($mysqli, $pilotid) {
-	$prep = $mysqli->prepare("SELECT dcs_events.InitiatorCoa, dcs_events.InitiatorType, dcs_events.time FROM pilots, dcs_events WHERE pilots.id=? AND dcs_events.event='S_EVENT_TAKEOFF' AND dcs_events.InitiatorPlayer=pilots.name ORDER BY dcs_events.id DESC LIMIT 1");
+	$prep = $mysqli->prepare("SELECT dcs_events.InitiatorCoa, dcs_events.InitiatorType, dcs_events.time FROM pilots, dcs_events WHERE pilots.id=? AND dcs_events.event IN ('S_EVENT_TAKEOFF', 'S_EVENT_BIRTH_AIRBORNE') AND dcs_events.InitiatorPlayer=pilots.name ORDER BY dcs_events.id DESC LIMIT 1");
 	$prep->bind_param('i', $pilotid);
 	$prep->execute();
 

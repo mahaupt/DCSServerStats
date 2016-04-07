@@ -1,5 +1,4 @@
 -- Copyright 2016 Marcel Haupt
--- http://marcel-haupt.eu/
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -14,14 +13,12 @@
 -- limitations under the License.
 
 -- THis is a Modification of the original code from xcom at http://forums.eagle.ru/showthread.php?t=124715&highlight=create+statistics
---
--- Github Project: https://github.com/cbacon93/DCSServerStats
 
 
 if CbaconExp==nil then		-- Protection against multiple references (typically wrong script installation)
 
 
-local UDPip = "127.0.0.1"
+local UDPip = "192.168.178.29"
 local UDPport = "9182"
 
 
@@ -118,20 +115,22 @@ function CbaconExp:onEvent(e)
 	local TargCoa = ""
 	local TargGroupCat = ""
 	
+	
 	-- safe world event
 	if WorldEvent == nil then
 		WorldEvent = "S_EVENT_UNKNOWN"
 	end
+	
 	
 	--Initiator variables
 	if e.initiator then
 		if string.sub(e.initiator:getName(),1,string.len("CARGO"))~="CARGO" then
 			
 			--safety - hit building or unmanned vehicle
-			if not e.initiator['getPlayerName'] then
+			if not e.initiator['getPlayerName'] then			
 				return
 			end
-			
+		
 			--Get initiator player name or AI if NIL
 			if not e.initiator:getPlayerName() then
 				InitPlayer = "AI"
@@ -153,6 +152,13 @@ function CbaconExp:onEvent(e)
 				InitCoa = SETCoalition[InitGroup:getCoalition()]
 				InitGroupCat = SETGroupCat[InitGroup:getCategory() + 1]
 				InitType = e.initiator:getTypeName()
+				
+				-- Birth event airborne
+				if (e.id == world.event.S_EVENT_BIRTH) then
+					if (Object.inAir(e.initiator)) then
+						WorldEvent = "S_EVENT_BIRTH_AIRBORNE"
+					end
+				end
 			--if Category is STATIC
 			elseif  Object.getCategory(e.initiator) == Object.Category.STATIC then
 				InitID_ = e.initiator.id_
@@ -184,12 +190,12 @@ function CbaconExp:onEvent(e)
 		if string.sub(e.target:getName(),1,string.len("CARGO"))~="CARGO" then
 			
 			--safety - hit building or unmanned vehicle
-			if not e.target['getPlayerName'] then
+			if not e.target['getPlayerName'] then		
 				return
 			end
-			
+		
 			--Get target player name or AI if NIL
-			if not e.target:getPlayerName() then
+			if not e.target:getPlayerName() then -- warnung!
 				TargPlayer = "AI"
 			else
 				TargPlayer = e.target:getPlayerName()

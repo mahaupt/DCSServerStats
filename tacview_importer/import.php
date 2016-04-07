@@ -18,7 +18,7 @@
 // Github Project: https://github.com/cbacon93/DCSServerStats
 
 
-$SMOOTHTIMES = 200;
+$SMOOTHTIMES = 500;
 
 
 if (!isset($argc) || is_null($argc) || isset($_SERVER['REMOTE_ADDR']))
@@ -176,7 +176,6 @@ for ($i = 1; $i < $argc; $i++)
 				$objects[$id]->position = false;
 				$objects[$id]->started = false;
 				$objects[$id]->lastupdate = $missiontime;
-				$objects[$id]->lastupdate = $missiontime;
 
 				
 				$coalitionname = $coalitions[$objects[$id]->coalitionId]->color;
@@ -195,11 +194,11 @@ for ($i = 1; $i < $argc; $i++)
 				$event = hexdec($split[0]);
 				$id = hexdec($split[1]);
 				
-				if ($event == hexdec("20") && isset($objects[$id])) {
-					if ($objects[$id]->type = "AIRPLANE" && $objects[$id]->started) {
+				/*if ($event == hexdec("20") && isset($objects[$id])) {
+					if ($objects[$id]->type == "AIRPLANE" && $objects[$id]->started) {
 						fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_CRASH', " . $id . ", '" . $coalitions[$objects[$id]->coalitionId]->color . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', '" . $objects[$id]->pilotname . "', '', '', 0, '', '', '', ''), \n");
 					}
-				}
+				}*/
 			} 
 			//advanced telemetry
 			else if ($line[0] == '@') 
