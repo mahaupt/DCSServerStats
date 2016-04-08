@@ -234,6 +234,9 @@
 			case 'S_EVENT_MISSION_END':
 				$eoftype = "MISSION_END";
 				break;
+			case 'S_EVENT_PLAYER_LEAVE_UNIT':
+				$eoftype = "LEAVE";
+				break;
 		}
 		
 		
@@ -275,7 +278,7 @@
 			
 			
 			//flight interruption events - or mission ends (server restarted)
-			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_CRASH' || $event->event == 'S_EVENT_PILOT_DEAD' || $event->event == 'S_EVENT_EJECTION' || $event->event == 'S_EVENT_LAND' || $event->event == 'S_EVENT_CRASH' || $event->event == 'S_EVENT_DEAD')) {
+			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_CRASH' || $event->event == 'S_EVENT_PILOT_DEAD' || $event->event == 'S_EVENT_EJECTION' || $event->event == 'S_EVENT_LAND' || $event->event == 'S_EVENT_DEAD' || $event->event == 'S_EVENT_PLAYER_LEAVE_UNIT')) {
 				
 				$takeoffevent = $events[$takeoffevents[$event->InitiatorID]];
 				insertFlight($mysqli, $takeoffevent, $event);

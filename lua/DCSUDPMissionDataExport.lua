@@ -18,7 +18,7 @@
 if CbaconExp==nil then		-- Protection against multiple references (typically wrong script installation)
 
 
-local UDPip = „127.0.0.1“
+local UDPip = "192.168.178.29"
 local UDPport = "9182"
 
 
@@ -218,6 +218,7 @@ function CbaconExp:onEvent(e)
 			elseif Object.getCategory(e.target) == Object.Category.UNIT then
 				local TargGroup = e.target:getGroup()
 				TargID_ = e.target.id_
+				
 				if TargGroup:isExist() then
 					TargCoa = SETCoalition[TargGroup:getCoalition()]
 					TargGroupCat = SETGroupCat[TargGroup:getCategory() + 1]
@@ -255,6 +256,7 @@ function CbaconExp:onEvent(e)
 	or e.id == world.event.S_EVENT_LAND
 	or e.id == world.event.S_EVENT_MISSION_START
 	or e.id == world.event.S_EVENT_MISSION_END
+	or e.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
 	or e.id == world.event.S_EVENT_TAKEOFF then
 	
 		udp = socket.udp()

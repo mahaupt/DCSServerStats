@@ -96,7 +96,7 @@ function echoPilotsTable($mysqli) {
 
 
 function echoPilotsFlightsTable($mysqli, $pilotid) {	
-	$result = $mysqli->query("SELECT * FROM flights, aircrafts WHERE flights.pilotid=" . $pilotid . " AND aircrafts.id=flights.aircraftid ORDER BY flights.id DESC LIMIT 10");
+	$result = $mysqli->query("SELECT * FROM flights, aircrafts WHERE flights.pilotid=" . $pilotid . " AND aircrafts.id=flights.aircraftid ORDER BY flights.takeofftime DESC LIMIT 10");
 	
 	echo "<table class='table_stats'>";
 	echo "<tr class='table_header'><th>Aircraft</th><th>Coalition</th><th>Takeoff</th><th>Landing</th><th>Duration</th><th>Type of Landing</th></tr>";
@@ -116,7 +116,7 @@ function echoPilotsFlightsTable($mysqli, $pilotid) {
 
 
 function echoFlightsTable($mysqli) {	
-	$result = $mysqli->query("SELECT flights.*, aircrafts.*, pilots.name as pname, pilots.id as pid FROM flights, aircrafts, pilots WHERE pilots.id=flights.pilotid AND aircrafts.id=flights.aircraftid AND pilots.name<>'AI' ORDER BY flights.id DESC LIMIT 30");
+	$result = $mysqli->query("SELECT flights.*, aircrafts.*, pilots.name as pname, pilots.id as pid FROM flights, aircrafts, pilots WHERE pilots.id=flights.pilotid AND aircrafts.id=flights.aircraftid AND pilots.name<>'AI' ORDER BY flights.takeofftime DESC LIMIT 30");
 	
 	echo "<table class='table_stats'>";
 	echo "<tr class='table_header'><th>Pilot</th><th>Aircraft</th><th>Coalition</th><th>Takeoff</th><th>Landing</th><th>Duration</th><th>Type of Landing</th></tr>";
