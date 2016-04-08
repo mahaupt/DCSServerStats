@@ -493,7 +493,7 @@ function getRelativePosition($object1, $object2) {
 
 
 function filterAiName($name) {
-	if (strlen($name) <= 0 || true) return $name;
+	if (strlen($name) <= 0) return $name;
 	
 	//turn AI to AI
 	switch($name) {
