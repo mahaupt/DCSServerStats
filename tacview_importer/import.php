@@ -39,6 +39,7 @@ for ($i = 1; $i < $argc; $i++)
 	$missiontime = 0.0; //time of current frame
 	$missionstarttime = 0;
 	$objects = array();
+	$removed_objects = array();
 	$coalitions = array();
 	$isheader = true;
 	$fileversion = 0;
@@ -102,6 +103,18 @@ for ($i = 1; $i < $argc; $i++)
 			}
 			
 			
+			
+			//crash event of aircrafts
+			foreach ($removed_objects as $id=>$object) {
+				if ($object->crash_time < $missiontime - 10) {
+					fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_CRASH', " . $object->id . ", '" . $coalitions[$object->coalitionId]->color . "', '" . $object->type . "', '" . $object->typename . "', '" . $object->pilotname . "', '', '', 0, '', '', '', ''), \n");
+					
+					unset($removed_objects[$id]);
+					unset($objects[$id]);
+				}
+			}
+			
+			
 			continue;
 		}
 		
@@ -117,6 +130,7 @@ for ($i = 1; $i < $argc; $i++)
 				
 				$id = hexdec($split[0]);
 				$type = "";
+				
 				//object is aircraft or helicopter
 				switch (hexdec($split[2])) 
 				{
@@ -125,6 +139,15 @@ for ($i = 1; $i < $argc; $i++)
 						break;
 					case(hexdec("18")):
 						$type="HELICOPTER";
+						break;
+					case(hexdec("20")):
+					case(hexdec("24")):
+					case(hexdec("28")):
+					case(hexdec("2c")):
+						$type="GROUND";
+						break;
+					case(hexdec("2e")):
+						$type="PARACHUTIST";
 						break;
 					case(hexdec("40")):
 						$type="MISSILE";
@@ -147,9 +170,6 @@ for ($i = 1; $i < $argc; $i++)
 					case(hexdec("46")):
 						$type="SHRAPNEL";
 						break;
-					case(hexdec("2e")):
-						$type="PARACHUTIST";
-						break;
 				}
 				
 				//no type - no recording
@@ -164,8 +184,8 @@ for ($i = 1; $i < $argc; $i++)
 				$objects[$id]->type = $type;
 				$objects[$id]->parentId = 0;
 				$objects[$id]->coalitionId = hexdec($split[3]);
-				$objects[$id]->typename = $split[5];
-				$objects[$id]->pilotname = $split[6];
+				$objects[$id]->typename = filterTypeNames($split[5]);
+				$objects[$id]->pilotname = filterAiName($split[6]);
 				$objects[$id]->lat = 0;
 				$objects[$id]->lon = 0;
 				$objects[$id]->alt = 0;
@@ -176,22 +196,14 @@ for ($i = 1; $i < $argc; $i++)
 				$objects[$id]->position = false;
 				$objects[$id]->started = false;
 				$objects[$id]->lastupdate = $missiontime;
-				$objects[$id]->crashed = false;
+				$objects[$id]->lasthit = -1;
 
 				
 				$coalitionname = $coalitions[$objects[$id]->coalitionId]->color;
 				
 				
-				
-				//turn AI to AI
-				switch($objects[$id]->pilotname) {
-					case("AWACS - Magic"):
-						$objects[$id]->pilotname = "AI";
-				}
-				
-				
 				//add birth message
-				if ($type == "AIRPLANE" || $type == "HELICOPTER") 
+				if ($type == "AIRPLANE" || $type == "HELICOPTER" || $type == "GROUND") 
 				{
 					fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_BIRTH', " . $id . ", '" . $coalitionname . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', '" . $objects[$id]->pilotname . "', '', '', 0, '', '', '', ''), \n");
 				}
@@ -205,27 +217,45 @@ for ($i = 1; $i < $argc; $i++)
 				$id = hexdec($split[1]);
 				
 				
-				//aircraft crash
-				if ($event == hexdec("20") && isset($objects[$id])) {
-					if ($objects[$id]->type == "AIRPLANE" && $objects[$id]->started && $objects[$id]->alt < 20) {
-						fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_CRASH', " . $id . ", '" . $coalitions[$objects[$id]->coalitionId]->color . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', '" . $objects[$id]->pilotname . "', '', '', 0, '', '', '', ''), \n");
-					}
-				}
-				
-				
-				//missile or shell hit
-				if ($objects[$id]->type == "SHELL" || 
-					$objects[$id]->type == "MISSILE" || 
-					$objects[$id]->type == "BOMB" || 
-					$objects[$id]->type == "ROCKET") 
+				//object removed
+				if ($event == hexdec("20") && isset($objects[$id])) 
 				{
-					if ($victim = getClosestObject($missiontime, $objects, $objects[$id], 25)) 
-					{
-						if ($objects[$id]->parentId > 0) {
-							$shooter = $objects[$objects[$id]->parentId];
-							
-							fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_HIT', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', " . $victim->id . ", '" . $coalitions[$victim->coalitionId]->color . "', '" . $victim->type . "', '" . $victim->typename . "', '" . $victim->pilotname . "'), \n");
+					//aircraft crash
+					if ($objects[$id]->type == "AIRPLANE" && $objects[$id]->started) {
+						$removed_objects[$id] = $objects[$id];
+						$removed_objects[$id]->crash_time = $missiontime;
+					} else if ($objects[$id]->type == "AIRPLANE") {
+						unset($objects[$id]);
+					}
+					
+					
+					//ground unit killed
+					if ($objects[$id]->type == "GROUND" && $objects[$id]->lasthit > 0) {
+						if ($missiontime - $objects[$id]->lasthit < 30) {
+							fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_CRASH', " . $id . ", '" . $coalitions[$objects[$id]->coalitionId]->color . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', '" . $objects[$id]->pilotname . "', '', '', 0, '', '', '', ''), \n");
+							unset($objects[$id]);
 						}
+					}
+				
+				
+				
+					//missile or shell hit
+					if ($objects[$id]->type == "SHELL" || 
+						$objects[$id]->type == "MISSILE" || 
+						$objects[$id]->type == "BOMB" || 
+						$objects[$id]->type == "ROCKET") 
+					{
+						if ($victim = getClosestObject($missiontime, $objects, $objects[$id], 25)) 
+						{
+							if ($objects[$id]->parentId > 0) {
+								$shooter = $objects[$objects[$id]->parentId];
+								
+								fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_HIT', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '" . $objects[$id]->type . "', '" . $objects[$id]->typename . "', " . $victim->id . ", '" . $coalitions[$victim->coalitionId]->color . "', '" . $victim->type . "', '" . $victim->typename . "', '" . $victim->pilotname . "'), \n");
+								$victim->lasthit = $missiontime;
+							}
+						}
+						
+						unset($objects[$id]);
 					}
 				}
 			} 
@@ -306,16 +336,11 @@ for ($i = 1; $i < $argc; $i++)
 						}
 						
 						//ejection - add ejection message
-						if ($objects[$id]->type == "SHRAPNEL" && $objects[$id]->typename == "PILOTACES") 
+						if ($objects[$id]->type == "PARACHUTIST")//$objects[$id]->type == "SHRAPNEL" && $objects[$id]->typename == "PILOTACES") 
 						{
 							if ($shooter = getClosestObject($missiontime, $objects, $objects[$id])) 
 							{
 								fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_EJECTION', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '', '', 0, '', '', '', ''), \n");
-								
-								if (!$shooter->crashed) {
-									$shooter->crashed = true;
-									fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_CRASH', " . $shooter->id . ", '" . $coalitions[$shooter->coalitionId]->color . "', '" . $shooter->type . "', '" . $shooter->typename . "', '" . $shooter->pilotname . "', '', '', 0, '', '', '', ''), \n");
-								}
 							}
 						}
 						
@@ -323,8 +348,19 @@ for ($i = 1; $i < $argc; $i++)
 						$objects[$id]->position = true;
 					}
 				}
-			}	
-		}
+			} //if position update	
+		} //if not header
+	} //while - lines
+	
+	
+	
+	//crash event of aircrafts
+	foreach ($removed_objects as $id=>$object) 
+	{
+		fwrite($sqlfile, "(NULL, " . floor($missionstarttime + $missiontime) . ", " . floor($missiontime) . ", 'S_EVENT_CRASH', " . $object->id . ", '" . $coalitions[$object->coalitionId]->color . "', '" . $object->type . "', '" . $object->typename . "', '" . $object->pilotname . "', '', '', 0, '', '', '', ''), \n");
+		
+		unset($removed_objects[$id]);
+		unset($objects[$id]);
 	}
 	
 	
@@ -376,7 +412,7 @@ function getClosestObject($misstime, $objects, $object1, $minimum_dist=999999999
 	
 	foreach($objects as $id=>$object) 
 	{
-		if ($object->position && ($object->type == "AIRPLANE" || $object->type == "HELICOPTER")) 
+		if ($object->position && ($object->type == "AIRPLANE" || $object->type == "HELICOPTER" || $object->type == "GROUND")) 
 		{
 			//get distance
 			$object = extrapolateObjectPosition($misstime, $object);
@@ -453,6 +489,44 @@ function getRelativePosition($object1, $object2) {
 		return ($toObject2->lat * $object1->vel_lat + $toObject2->lon * $object1->vel_lon + $toObject2->alt * $object1->lon) / $distance / $object1->vel;
 	}
 	return 0;
+}
+
+
+function filterAiName($name) {
+	if (strlen($name) <= 0 || true) return $name;
+	
+	//turn AI to AI
+	switch($name) {
+		case("AWACS - Magic"):
+			$name = "AI";
+	}
+	
+	//generic pilot names
+	if (strpos($name, "Pilot #") !== false) $name = "AI";
+	if (strpos($name, "Cougar #") !== false) $name = "AI";
+	if (strpos($name, "Mastic #") !== false) $name = "AI";
+	if (strpos($name, "Unit #") !== false) $name = "AI";
+	if (strpos($name, "Einheit #") !== false) $name = "AI";
+				
+	return $name;
+}
+
+function filterTypeNames($name) {
+	if (strlen($name) <= 0) return $name;
+	
+	if (strpos($name, "weapons.") !== false) {
+		$name = str_replace("weapons.missiles.", "", $name);
+		$name = str_replace("weapons.shells.", "", $name);
+		$name = str_replace("weapons.rockets.", "", $name);
+		$name = str_replace("weapons.bombs.", "", $name);
+		
+		//weapons
+		$name = str_replace("M61_20_", "M61 20 mm ", $name);
+		$name = str_replace("DEFA552_30", "DEFA 552 30mm", $name);
+		
+		$name = str_replace("_", "-", $name);
+	}
+	return $name;
 }
 	
 ?>
