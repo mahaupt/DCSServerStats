@@ -16,6 +16,7 @@ Creates statistics for:
 You can use this data to:
 - Set up a Killboard or Rankinglist on your Website
 - To show the training process of your Wing
+- You can even see live data and who is **currently flying**
 
 
 ##How does it work?
@@ -50,3 +51,14 @@ java -jar DCSServerStats.jar 127.0.0.1 9182 https://example.com/dcsexport/entry.
 
 ##Start the Server
 Run the Java Program before starting your DCS server. You can easily do this by creating a .bat/.sh file.
+
+##Using a Cronjob
+While not recommendet, you can use a cronjob to parse your event data. Simply turn $AUTO_CRON to false and set up a cronjob for cron.php for every 10 or 15 minutes.
+
+##Using the xml Uploader
+You can use the xml uploader to upload your as xml exported flights from Tacview directly into the database. Personally, I use it for all the BMS Pilots. 
+
+##Using multiple servers
+You can use this tool with multiple servers
+To use this program properly, you need a separate event table for each of your server.
+Simply copy the entry.php and set at the beginning of the file $OVERRIDE_EVENT_TABLE to the name of your separate event table
