@@ -35,6 +35,7 @@
 	}
 	
 	
+	//need to first add all emty entries for new pilots, aircrafts, weapons and pilot_aircrafts so i can write later
 	function addNewEntrys($mysqli, $EVENT_TABLE) {
 		//insert unknown pilots to pilot table
 		$query1 = "INSERT INTO `pilots` (`name`, `lastactive`) SELECT DISTINCT `events`.`InitiatorPlayer`, " . time() . " FROM `" . $EVENT_TABLE . "` AS events WHERE `events`.`InitiatorGroupCat` = 'AIRPLANE' AND `events`.`InitiatorPlayer` NOT IN ( SELECT `pilots`.`name` FROM `pilots` WHERE 1 ) AND `events`.`InitiatorPlayer`<>''";
@@ -61,7 +62,7 @@
 	}
 	
 	
-	
+	//update the counters in the database for crashes, ejections, shots
 	function updateCounters($mysqli, $EVENT_TABLE) {
 		//update counters on pilot table
 		$mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.shots = pilots.shots + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events WHERE events.event='S_EVENT_SHOT' AND events.WeaponCat='MISSILE' AND events.InitiatorPlayer=pilots.name)");
@@ -84,6 +85,7 @@
 	
 	
 	//add hit from event to tables
+	//need to check
 	function countHit($mysqli, $hitevent, $EVENT_TABLE) {
 		//add hit to table
 		$mysqli->query("INSERT INTO hitsshotskills (hitsshotskills.time, hitsshotskills.missiontime, hitsshotskills.initiatorCoa, hitsshotskills.targetCoa, hitsshotskills.initiatorAcid, hitsshotskills.initiatorPid, hitsshotskills.targetAcid, hitsshotskills.targetPid, hitsshotskills.weaponid, hitsshotskills.type) SELECT " . $hitevent->time . ", " . $hitevent->missiontime . ", '" . $hitevent->InitiatorCoa . "', '" . $hitevent->TargetCoa . "', ac1.id, p1.id, ac2.id, p2.id, weapons.id, 'HIT' FROM aircrafts AS ac1, aircrafts AS ac2, pilots AS p1, pilots as p2, weapons WHERE ac1.name='" . $hitevent->InitiatorType . "' AND ac2.name='" . $hitevent->TargetType . "' AND p1.name='" . $hitevent->InitiatorPlayer . "' AND p2.name='" . $hitevent->TargetPlayer . "' AND weapons.name='" . $hitevent->WeaponName . "'");
@@ -113,7 +115,8 @@
 	
 	
 	
-	
+	//parse hit events and try to figure out who killed who
+	// double kill event: HIT, EJECTION, HIT, CRASH - prevented
 	function addHitsShotsKills($mysqli, $events, $EVENT_TABLE) {
 		//add entries to shot table
 		$mysqli->query("INSERT INTO hitsshotskills (hitsshotskills.time, hitsshotskills.missiontime, hitsshotskills.initiatorCoa, hitsshotskills.initiatorAcid, hitsshotskills.initiatorPid, hitsshotskills.weaponid, hitsshotskills.type) SELECT events.time, events.missiontime, events.InitiatorCoa, aircrafts.id, pilots.id, weapons.id, 'SHOT' FROM " . $EVENT_TABLE . " AS events, aircrafts, pilots, weapons WHERE aircrafts.name=events.InitiatorType AND pilots.name=events.InitiatorPlayer AND weapons.name=events.WeaponName AND events.event='S_EVENT_SHOT'");
@@ -138,10 +141,9 @@
 				if ($hitevent->time < $event->time - 120) continue;
 				
 				//no hit when target pilot was already killed 60 seconds before (prevent double kill entries)
-				//addition: bms xml import has no double kill possibility
 				$killtwicetimeout = $hitevent->time + 60;
-				$result = $mysqli->query("SELECT hitsshotskills.id FROM hitsshotskills, pilots WHERE pilots.name='" . $event->InitiatorPlayer . "' AND pilots.id=hitsshotskills.targetPid AND hitsshotskills.time>" . $killtwicetimeout . " AND type='KILL'");
-				if ($result->num_rows > 0 && $EVENT_TABLE != 'bms_events') {
+				$result = $mysqli->query("SELECT hitsshotskills.id FROM hitsshotskills, pilots WHERE pilots.name='" . $event->InitiatorPlayer . "' AND hitsshotskills.target_raw_id=" . $event->InitiatorID . " AND pilots.id=hitsshotskills.targetPid AND hitsshotskills.time>" . $killtwicetimeout . " AND type='KILL'");
+				if ($result->num_rows > 0) {
 					//add hit to statistics
 					countHit($mysqli, $hitevent, $EVENT_TABLE);
 	
@@ -151,7 +153,7 @@
 				}
 				
 				//add kill to table
-				$mysqli->query("INSERT INTO hitsshotskills (hitsshotskills.time, hitsshotskills.missiontime, hitsshotskills.initiatorCoa, hitsshotskills.targetCoa, hitsshotskills.initiatorAcid, hitsshotskills.initiatorPid, hitsshotskills.targetAcid, hitsshotskills.targetPid, hitsshotskills.weaponid, hitsshotskills.type) SELECT " . $event->time . ", " . $event->missiontime . ", '" . $hitevent->InitiatorCoa . "', '" . $hitevent->TargetCoa . "', ac1.id, p1.id, ac2.id, p2.id, weapons.id, 'KILL' FROM aircrafts AS ac1, aircrafts AS ac2, pilots AS p1, pilots as p2, weapons WHERE ac1.name='" . $hitevent->InitiatorType . "' AND ac2.name='" . $hitevent->TargetType . "' AND p1.name='" . $hitevent->InitiatorPlayer . "' AND p2.name='" . $hitevent->TargetPlayer . "' AND weapons.name='" . $hitevent->WeaponName . "'");
+				$mysqli->query("INSERT INTO hitsshotskills (hitsshotskills.time, hitsshotskills.missiontime, hitsshotskills.initiatorCoa, hitsshotskills.targetCoa, hitsshotskills.initiatorAcid, hitsshotskills.initiatorPid, hitsshotskills.targetAcid, hitsshotskills.targetPid, hitsshotskills.weaponid, hitsshotskills.type, hitsshotskills.target_raw_id) SELECT " . $event->time . ", " . $event->missiontime . ", '" . $hitevent->InitiatorCoa . "', '" . $hitevent->TargetCoa . "', ac1.id, p1.id, ac2.id, p2.id, weapons.id, 'KILL', " . $event->InitiatorID . " FROM aircrafts AS ac1, aircrafts AS ac2, pilots AS p1, pilots as p2, weapons WHERE ac1.name='" . $hitevent->InitiatorType . "' AND ac2.name='" . $hitevent->TargetType . "' AND p1.name='" . $hitevent->InitiatorPlayer . "' AND p2.name='" . $hitevent->TargetPlayer . "' AND weapons.name='" . $hitevent->WeaponName . "'");
 				
 				//update pilot statistic
 				$mysqli->query("UPDATE pilots SET kills = kills + 1, lastactive=" . time() . " WHERE name='" . $hitevent->InitiatorPlayer . "'");

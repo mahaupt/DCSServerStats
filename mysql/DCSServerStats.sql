@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 09. Apr 2016 um 20:45
+-- Erstellungszeit: 09. Apr 2016 um 22:27
 -- Server-Version: 10.1.10-MariaDB
 -- PHP-Version: 5.6.19
 
@@ -139,7 +139,8 @@ CREATE TABLE `hitsshotskills` (
   `targetAcid` int(11) NOT NULL DEFAULT '0',
   `targetCoa` varchar(255) NOT NULL DEFAULT '',
   `weaponid` int(11) NOT NULL,
-  `type` varchar(255) NOT NULL
+  `type` varchar(255) NOT NULL,
+  `target_raw_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -272,7 +273,7 @@ ALTER TABLE `aircrafts`
 -- AUTO_INCREMENT für Tabelle `bms_events`
 --
 ALTER TABLE `bms_events`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=569;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=143;
 --
 -- AUTO_INCREMENT für Tabelle `dcs_events`
 --
