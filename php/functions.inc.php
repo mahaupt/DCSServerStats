@@ -81,7 +81,11 @@ function echoPilotsTable($mysqli) {
 		if ($row->online == 1)
 			$onlinestatus = "<p class='pilot_online'>Flying</p>";
 		
-		echo "<tr onclick=\"window.document.location='?pid=" . $row->id . "'\" class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->flights . "</td><td>" . timeToString($row->flighttime) . "</td><td>" . $row->kills . "</td><td>" . $row->ejects . "</td><td>" . $row->crashes . "</td><td>" . date('d.m.Y', $row->lastactive) . "</td><td>" . $onlinestatus . "</td></tr>";
+		if ($row->show_kills) {
+			echo "<tr onclick=\"window.document.location='?pid=" . $row->id . "'\" class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->flights . "</td><td>" . timeToString($row->flighttime) . "</td><td>" . $row->kills . "</td><td>" . $row->ejects . "</td><td>" . $row->crashes . "</td><td>" . date('d.m.Y', $row->lastactive) . "</td><td>" . $onlinestatus . "</td></tr>";
+		} else {
+			echo "<tr onclick=\"window.document.location='?pid=" . $row->id . "'\" class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->flights . "</td><td>" . timeToString($row->flighttime) . "</td><td>-</td><td>-</td><td>-</td><td>" . date('d.m.Y', $row->lastactive) . "</td><td>" . $onlinestatus . "</td></tr>";
+		}
 		
 		$i++;
 	}
@@ -136,14 +140,18 @@ function echoFlightsTable($mysqli) {
 
 
 function echoPilotsAircraftsTable($mysqli, $pilotid) {
-	$result = $mysqli->query("SELECT pilot_aircrafts.flights, aircrafts.name, pilot_aircrafts.time, pilot_aircrafts.ejects, pilot_aircrafts.crashes, pilot_aircrafts.kills FROM pilot_aircrafts, aircrafts WHERE pilot_aircrafts.pilotid=" . $pilotid . " AND pilot_aircrafts.aircraftid=aircrafts.id ORDER BY pilot_aircrafts.time DESC");
+	$result = $mysqli->query("SELECT pilot_aircrafts.flights, aircrafts.name, pilot_aircrafts.time, pilot_aircrafts.ejects, pilot_aircrafts.crashes, pilot_aircrafts.kills, pilots.show_kills FROM pilot_aircrafts, aircrafts, pilots WHERE pilot_aircrafts.pilotid=" . $pilotid . " AND pilots.id = pilot_aircrafts.pilotid AND pilot_aircrafts.aircraftid=aircrafts.id ORDER BY pilot_aircrafts.time DESC");
 	
 	echo "<table class='table_stats'>";
 	echo "<tr class='table_header'><th>Aircraft</th><th>Flights</th><th>Flight time</th><th>Kills</th><th>Ejections</th><th>Crashes</th></tr>";
 	
 	$i = 0;
 	while($row = $result->fetch_object()) {
-		echo "<tr class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->flights . "</td><td>" . timeToString($row->time) . "</td><td>" . $row->kills . "</td><td>" . $row->ejects . "</td><td>" . $row->crashes . "</td></tr>";
+		if ($row->show_kills) {
+			echo "<tr class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->flights . "</td><td>" . timeToString($row->time) . "</td><td>" . $row->kills . "</td><td>" . $row->ejects . "</td><td>" . $row->crashes . "</td></tr>";
+		} else {
+			echo "<tr class='table_row_" . $i%2 . "'><td>" . $row->name . "</td><td>" . $row->flights . "</td><td>" . timeToString($row->time) . "</td><td>-</td><td>-</td><td>-</td></tr>";
+		}
 		$i++;
 	}
 	

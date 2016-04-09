@@ -17,6 +17,8 @@
 	// Github Project: https://github.com/cbacon93/DCSServerStats
 	
 	$PASSWORD = "secretpassword";
+	$UPLOAD_PASSWORD = "secretpassword";
+	
 	$MYSQL_HOST = "127.0.0.1";
 	$MYSQL_USER = "root";
 	$MYSQL_PASS = "";

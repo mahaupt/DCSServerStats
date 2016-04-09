@@ -27,6 +27,13 @@
 	}
 	
 	
+	//get mysql event table
+	$EVENT_TABLE = "dcs_events";
+	if (isset($OVERRIDE_EVENT_TABLE)) {
+		$EVENT_TABLE = $OVERRIDE_EVENT_TABLE;
+	}
+	
+	
 	$driver = new mysqli_driver();
 	$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
@@ -46,19 +53,19 @@
 
 	
 	//get all objects from database
-	$dcs_events = getAllDbObjects($mysqli, "dcs_events");
+	$dcs_events = getAllDbObjects($mysqli, $EVENT_TABLE);
 	$dcs_parser_log->events = sizeof($dcs_events);
 	
 	//add new weapons, pilots, aircrafts to database
-	addNewEntrys($mysqli);
+	addNewEntrys($mysqli, $EVENT_TABLE);
 	//update counters
-	updateCounters($mysqli);
+	updateCounters($mysqli, $EVENT_TABLE);
 	//process hits shots and kills
-	addHitsShotsKills($mysqli, $dcs_events);
+	addHitsShotsKills($mysqli, $dcs_events, $EVENT_TABLE);
 	//process landing and takeoff times
-	calculateLandingTime($mysqli, $dcs_events);
+	calculateLandingTime($mysqli, $dcs_events, $EVENT_TABLE);
 	//delete events
-	deleteProcessedEvents($mysqli);
+	deleteProcessedEvents($mysqli, $EVENT_TABLE);
 	
 	
 	//unlock tables

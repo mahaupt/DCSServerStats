@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 03. Apr 2016 um 16:19
+-- Erstellungszeit: 09. Apr 2016 um 20:45
 -- Server-Version: 10.1.10-MariaDB
 -- PHP-Version: 5.6.19
 
@@ -38,6 +38,31 @@ CREATE TABLE `aircrafts` (
   `kills` int(11) NOT NULL DEFAULT '0',
   `inc_hits` int(11) NOT NULL DEFAULT '0',
   `inc_kills` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `bms_events`
+--
+
+CREATE TABLE `bms_events` (
+  `id` int(11) NOT NULL,
+  `time` bigint(20) NOT NULL,
+  `missiontime` bigint(20) NOT NULL,
+  `event` varchar(255) NOT NULL,
+  `InitiatorID` int(11) NOT NULL,
+  `InitiatorCoa` varchar(255) NOT NULL,
+  `InitiatorGroupCat` varchar(255) NOT NULL,
+  `InitiatorType` varchar(255) NOT NULL,
+  `InitiatorPlayer` varchar(255) NOT NULL,
+  `WeaponCat` varchar(255) NOT NULL,
+  `WeaponName` varchar(255) NOT NULL,
+  `TargetID` int(11) NOT NULL,
+  `TargetCoa` varchar(255) NOT NULL,
+  `TargetGroupCat` varchar(255) NOT NULL,
+  `TargetType` varchar(255) NOT NULL,
+  `TargetPlayer` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -136,7 +161,8 @@ CREATE TABLE `pilots` (
   `inc_hits` int(11) NOT NULL DEFAULT '0',
   `inc_kills` int(11) NOT NULL DEFAULT '0',
   `lastactive` int(11) NOT NULL DEFAULT '0',
-  `online` tinyint(1) NOT NULL DEFAULT '0'
+  `online` tinyint(1) NOT NULL DEFAULT '0',
+  `show_kills` tinyint(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -183,6 +209,12 @@ CREATE TABLE `weapons` (
 -- Indizes für die Tabelle `aircrafts`
 --
 ALTER TABLE `aircrafts`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `bms_events`
+--
+ALTER TABLE `bms_events`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -236,6 +268,11 @@ ALTER TABLE `weapons`
 --
 ALTER TABLE `aircrafts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT für Tabelle `bms_events`
+--
+ALTER TABLE `bms_events`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=569;
 --
 -- AUTO_INCREMENT für Tabelle `dcs_events`
 --

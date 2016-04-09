@@ -35,26 +35,26 @@
 	}
 	
 	
-	function addNewEntrys($mysqli) {
+	function addNewEntrys($mysqli, $EVENT_TABLE) {
 		//insert unknown pilots to pilot table
-		$query1 = "INSERT INTO `pilots` (`name`, `lastactive`) SELECT DISTINCT `dcs_events`.`InitiatorPlayer`, " . time() . " FROM `dcs_events` WHERE `dcs_events`.`InitiatorGroupCat` = 'AIRPLANE' AND `dcs_events`.`InitiatorPlayer` NOT IN ( SELECT `pilots`.`name` FROM `pilots` WHERE 1 )";
-		$query2 = "INSERT INTO `pilots` (`name`, `lastactive`) SELECT DISTINCT `dcs_events`.`TargetPlayer`, " . time() . " FROM `dcs_events` WHERE `dcs_events`.`TargetGroupCat` = 'AIRPLANE' AND `dcs_events`.`TargetPlayer` NOT IN ( SELECT `pilots`.`name` FROM `pilots` WHERE 1 )";
+		$query1 = "INSERT INTO `pilots` (`name`, `lastactive`) SELECT DISTINCT `events`.`InitiatorPlayer`, " . time() . " FROM `" . $EVENT_TABLE . "` AS events WHERE `events`.`InitiatorGroupCat` = 'AIRPLANE' AND `events`.`InitiatorPlayer` NOT IN ( SELECT `pilots`.`name` FROM `pilots` WHERE 1 ) AND `events`.`InitiatorPlayer`<>''";
+		$query2 = "INSERT INTO `pilots` (`name`, `lastactive`) SELECT DISTINCT `events`.`TargetPlayer`, " . time() . " FROM `" . $EVENT_TABLE . "` AS events WHERE `events`.`TargetGroupCat` = 'AIRPLANE' AND `events`.`TargetPlayer` NOT IN ( SELECT `pilots`.`name` FROM `pilots` WHERE 1 ) AND `events`.`TargetPlayer`<>''";
 		$mysqli->query($query1);
 		$mysqli->query($query2);
 		
 		//insert unknown aircraft to aircraft table
-		$query3 = "INSERT INTO `aircrafts` (`name`) SELECT DISTINCT `dcs_events`.`InitiatorType` FROM `dcs_events` WHERE `dcs_events`.`InitiatorGroupCat` = 'AIRPLANE' AND `dcs_events`.`InitiatorType` NOT IN ( SELECT `aircrafts`.`name` FROM `aircrafts` WHERE 1 )";
-		$query4 = "INSERT INTO `aircrafts` (`name`) SELECT DISTINCT `dcs_events`.`TargetType` FROM `dcs_events` WHERE `dcs_events`.`TargetGroupCat` = 'AIRPLANE' AND `dcs_events`.`TargetType` NOT IN ( SELECT `aircrafts`.`name` FROM `aircrafts` WHERE 1 )";
+		$query3 = "INSERT INTO `aircrafts` (`name`) SELECT DISTINCT `events`.`InitiatorType` FROM `" . $EVENT_TABLE . "` AS events WHERE `events`.`InitiatorGroupCat` = 'AIRPLANE' AND `events`.`InitiatorType` NOT IN ( SELECT `aircrafts`.`name` FROM `aircrafts` WHERE 1 )";
+		$query4 = "INSERT INTO `aircrafts` (`name`) SELECT DISTINCT `events`.`TargetType` FROM `" . $EVENT_TABLE . "` AS events WHERE `events`.`TargetGroupCat` = 'AIRPLANE' AND `events`.`TargetType` NOT IN ( SELECT `aircrafts`.`name` FROM `aircrafts` WHERE 1 )";
 		$mysqli->query($query3);
 		$mysqli->query($query4);
 		
 		//insert unknown weapons to weapon table
-		$query5 = "INSERT INTO `weapons` (`type`, `name`) SELECT `dcs_events`.`WeaponCat`, `dcs_events`.`WeaponName` FROM `dcs_events` WHERE `dcs_events`.`WeaponCat`<>'No Weapon' AND `dcs_events`.`WeaponName`<>'No Weapon' AND `dcs_events`.`id` IN ( SELECT MIN(`dcs_events`.`id`) FROM `dcs_events` GROUP BY `dcs_events`.`WeaponName` ) AND `dcs_events`.`WeaponName` NOT IN ( SELECT `weapons`.`name` FROM `weapons` WHERE 1 )";
+		$query5 = "INSERT INTO `weapons` (`type`, `name`) SELECT `events`.`WeaponCat`, `events`.`WeaponName` FROM `" . $EVENT_TABLE . "` AS events WHERE `events`.`WeaponCat` NOT IN ('', 'No Weapon') AND `events`.`WeaponName` NOT IN ('', 'No Weapon') AND `events`.`id` IN ( SELECT MIN(`events`.`id`) FROM `" . $EVENT_TABLE . "` as events GROUP BY `events`.`WeaponName` ) AND `events`.`WeaponName` NOT IN ( SELECT `weapons`.`name` FROM `weapons` WHERE 1 )";
 		$mysqli->query($query5);
 		
 		//insert new aircrafts to pilots
-		$query6 = "INSERT INTO pilot_aircrafts (pilot_aircrafts.pilotid, pilot_aircrafts.aircraftid) SELECT DISTINCT pilots.id, aircrafts.id FROM dcs_events, pilots, aircrafts WHERE dcs_events.InitiatorPlayer = pilots.name AND dcs_events.InitiatorType = aircrafts.name AND dcs_events.InitiatorGroupCat = 'AIRPLANE' AND aircrafts.id NOT IN (SELECT pilot_aircrafts.aircraftid FROM pilot_aircrafts WHERE pilot_aircrafts.pilotid = pilots.id )";
-		$query7 = "INSERT INTO pilot_aircrafts (pilot_aircrafts.pilotid, pilot_aircrafts.aircraftid) SELECT DISTINCT pilots.id, aircrafts.id FROM dcs_events, pilots, aircrafts WHERE dcs_events.TargetPlayer = pilots.name AND dcs_events.TargetType = aircrafts.name AND dcs_events.TargetGroupCat = 'AIRPLANE' AND aircrafts.id NOT IN (SELECT pilot_aircrafts.aircraftid FROM pilot_aircrafts WHERE pilot_aircrafts.pilotid = pilots.id )";
+		$query6 = "INSERT INTO pilot_aircrafts (pilot_aircrafts.pilotid, pilot_aircrafts.aircraftid) SELECT DISTINCT pilots.id, aircrafts.id FROM " . $EVENT_TABLE . " AS events, pilots, aircrafts WHERE events.InitiatorPlayer = pilots.name AND events.InitiatorType = aircrafts.name AND events.InitiatorGroupCat = 'AIRPLANE' AND aircrafts.id NOT IN (SELECT pilot_aircrafts.aircraftid FROM pilot_aircrafts WHERE pilot_aircrafts.pilotid = pilots.id )";
+		$query7 = "INSERT INTO pilot_aircrafts (pilot_aircrafts.pilotid, pilot_aircrafts.aircraftid) SELECT DISTINCT pilots.id, aircrafts.id FROM " . $EVENT_TABLE . " AS events, pilots, aircrafts WHERE events.TargetPlayer = pilots.name AND events.TargetType = aircrafts.name AND events.TargetGroupCat = 'AIRPLANE' AND aircrafts.id NOT IN (SELECT pilot_aircrafts.aircraftid FROM pilot_aircrafts WHERE pilot_aircrafts.pilotid = pilots.id )";
 		$mysqli->query($query6);
 		$mysqli->query($query7);
 
@@ -62,29 +62,29 @@
 	
 	
 	
-	function updateCounters($mysqli) {
+	function updateCounters($mysqli, $EVENT_TABLE) {
 		//update counters on pilot table
-		$mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.shots = pilots.shots + (SELECT COUNT(dcs_events.id) FROM dcs_events WHERE dcs_events.event='S_EVENT_SHOT' AND dcs_events.WeaponCat='MISSILE' AND dcs_events.InitiatorPlayer=pilots.name)");
-		$mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.crashes = pilots.crashes + (SELECT COUNT(dcs_events.id) FROM dcs_events WHERE dcs_events.event='S_EVENT_CRASH' AND dcs_events.InitiatorPlayer=pilots.name)");
-		$mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.ejects = pilots.ejects + (SELECT COUNT(dcs_events.id) FROM dcs_events WHERE dcs_events.event='S_EVENT_EJECTION' AND dcs_events.InitiatorPlayer=pilots.name)");
+		$mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.shots = pilots.shots + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events WHERE events.event='S_EVENT_SHOT' AND events.WeaponCat='MISSILE' AND events.InitiatorPlayer=pilots.name)");
+		$mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.crashes = pilots.crashes + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events WHERE events.event='S_EVENT_CRASH' AND events.InitiatorPlayer=pilots.name)");
+		$mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.ejects = pilots.ejects + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events WHERE events.event='S_EVENT_EJECTION' AND events.InitiatorPlayer=pilots.name)");
 		
 		//update counters on aircraft table
-		$mysqli->query("UPDATE aircrafts SET aircrafts.shots = aircrafts.shots + (SELECT COUNT(dcs_events.id) FROM dcs_events WHERE aircrafts.name=dcs_events.InitiatorType AND dcs_events.InitiatorGroupCat='AIRPLANE' AND dcs_events.event='S_EVENT_SHOT' AND dcs_events.WeaponCat='MISSILE')");
-		$mysqli->query("UPDATE aircrafts SET aircrafts.crashes = aircrafts.crashes + (SELECT COUNT(dcs_events.id) FROM dcs_events WHERE aircrafts.name=dcs_events.InitiatorType AND dcs_events.InitiatorGroupCat='AIRPLANE' AND dcs_events.event='S_EVENT_CRASH')");
-		$mysqli->query("UPDATE aircrafts SET aircrafts.ejects = aircrafts.ejects + (SELECT COUNT(dcs_events.id) FROM dcs_events WHERE aircrafts.name=dcs_events.InitiatorType AND dcs_events.InitiatorGroupCat='AIRPLANE' AND dcs_events.event='S_EVENT_EJECTIONS')");
+		$mysqli->query("UPDATE aircrafts SET aircrafts.shots = aircrafts.shots + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events WHERE aircrafts.name=events.InitiatorType AND events.InitiatorGroupCat='AIRPLANE' AND events.event='S_EVENT_SHOT' AND events.WeaponCat='MISSILE')");
+		$mysqli->query("UPDATE aircrafts SET aircrafts.crashes = aircrafts.crashes + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events WHERE aircrafts.name=events.InitiatorType AND events.InitiatorGroupCat='AIRPLANE' AND events.event='S_EVENT_CRASH')");
+		$mysqli->query("UPDATE aircrafts SET aircrafts.ejects = aircrafts.ejects + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events WHERE aircrafts.name=events.InitiatorType AND events.InitiatorGroupCat='AIRPLANE' AND events.event='S_EVENT_EJECTIONS')");
 
 		//update counters on missile table
-		$mysqli->query("UPDATE weapons SET weapons.shots = weapons.shots + (SELECT COUNT(dcs_events.id) FROM dcs_events WHERE dcs_events.event='S_EVENT_SHOT' AND dcs_events.WeaponName=weapons.name)");
+		$mysqli->query("UPDATE weapons SET weapons.shots = weapons.shots + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events WHERE events.event='S_EVENT_SHOT' AND events.WeaponName=weapons.name)");
 
 		//pilot aircrafts
-		$mysqli->query("UPDATE pilot_aircrafts SET pilot_aircrafts.shots = pilot_aircrafts.shots + (SELECT COUNT(dcs_events.id) FROM dcs_events, pilots, aircrafts WHERE pilots.id=pilot_aircrafts.pilotid AND aircrafts.id=pilot_aircrafts.aircraftid AND dcs_events.InitiatorPlayer=pilots.name AND dcs_events.InitiatorType=aircrafts.name AND dcs_events.InitiatorGroupCat='AIRPLANE' AND dcs_events.event='S_EVENT_SHOT' AND dcs_events.WeaponCat='MISSILE')");
-		$mysqli->query("UPDATE pilot_aircrafts SET pilot_aircrafts.ejects = pilot_aircrafts.ejects + (SELECT COUNT(dcs_events.id) FROM dcs_events, pilots, aircrafts WHERE pilots.id=pilot_aircrafts.pilotid AND aircrafts.id=pilot_aircrafts.aircraftid AND dcs_events.InitiatorPlayer=pilots.name AND dcs_events.InitiatorType=aircrafts.name AND dcs_events.InitiatorGroupCat='AIRPLANE' AND dcs_events.event='S_EVENT_EJECTION')");
-		$mysqli->query("UPDATE pilot_aircrafts SET pilot_aircrafts.crashes = pilot_aircrafts.crashes + (SELECT COUNT(dcs_events.id) FROM dcs_events, pilots, aircrafts WHERE pilots.id=pilot_aircrafts.pilotid AND aircrafts.id=pilot_aircrafts.aircraftid AND dcs_events.InitiatorPlayer=pilots.name AND dcs_events.InitiatorType=aircrafts.name AND dcs_events.InitiatorGroupCat='AIRPLANE' AND dcs_events.event='S_EVENT_CRASH')");
+		$mysqli->query("UPDATE pilot_aircrafts SET pilot_aircrafts.shots = pilot_aircrafts.shots + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events, pilots, aircrafts WHERE pilots.id=pilot_aircrafts.pilotid AND aircrafts.id=pilot_aircrafts.aircraftid AND events.InitiatorPlayer=pilots.name AND events.InitiatorType=aircrafts.name AND events.InitiatorGroupCat='AIRPLANE' AND events.event='S_EVENT_SHOT' AND events.WeaponCat='MISSILE')");
+		$mysqli->query("UPDATE pilot_aircrafts SET pilot_aircrafts.ejects = pilot_aircrafts.ejects + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events, pilots, aircrafts WHERE pilots.id=pilot_aircrafts.pilotid AND aircrafts.id=pilot_aircrafts.aircraftid AND events.InitiatorPlayer=pilots.name AND events.InitiatorType=aircrafts.name AND events.InitiatorGroupCat='AIRPLANE' AND events.event='S_EVENT_EJECTION')");
+		$mysqli->query("UPDATE pilot_aircrafts SET pilot_aircrafts.crashes = pilot_aircrafts.crashes + (SELECT COUNT(events.id) FROM " . $EVENT_TABLE . " AS events, pilots, aircrafts WHERE pilots.id=pilot_aircrafts.pilotid AND aircrafts.id=pilot_aircrafts.aircraftid AND events.InitiatorPlayer=pilots.name AND events.InitiatorType=aircrafts.name AND events.InitiatorGroupCat='AIRPLANE' AND events.event='S_EVENT_CRASH')");
 	}
 	
 	
 	//add hit from event to tables
-	function countHit($mysqli, $hitevent) {
+	function countHit($mysqli, $hitevent, $EVENT_TABLE) {
 		//add hit to table
 		$mysqli->query("INSERT INTO hitsshotskills (hitsshotskills.time, hitsshotskills.missiontime, hitsshotskills.initiatorCoa, hitsshotskills.targetCoa, hitsshotskills.initiatorAcid, hitsshotskills.initiatorPid, hitsshotskills.targetAcid, hitsshotskills.targetPid, hitsshotskills.weaponid, hitsshotskills.type) SELECT " . $hitevent->time . ", " . $hitevent->missiontime . ", '" . $hitevent->InitiatorCoa . "', '" . $hitevent->TargetCoa . "', ac1.id, p1.id, ac2.id, p2.id, weapons.id, 'HIT' FROM aircrafts AS ac1, aircrafts AS ac2, pilots AS p1, pilots as p2, weapons WHERE ac1.name='" . $hitevent->InitiatorType . "' AND ac2.name='" . $hitevent->TargetType . "' AND p1.name='" . $hitevent->InitiatorPlayer . "' AND p2.name='" . $hitevent->TargetPlayer . "' AND weapons.name='" . $hitevent->WeaponName . "'");
 		
@@ -108,15 +108,15 @@
 		}
 		
 		//delete hit event
-		$mysqli->query("DELETE FROM dcs_events WHERE id=" . $hitevent->id . "");
+		$mysqli->query("DELETE FROM " . $EVENT_TABLE . " WHERE id=" . $hitevent->id . "");
 	}
 	
 	
 	
 	
-	function addHitsShotsKills($mysqli, $events) {
+	function addHitsShotsKills($mysqli, $events, $EVENT_TABLE) {
 		//add entries to shot table
-		$mysqli->query("INSERT INTO hitsshotskills (hitsshotskills.time, hitsshotskills.missiontime, hitsshotskills.initiatorCoa, hitsshotskills.initiatorAcid, hitsshotskills.initiatorPid, hitsshotskills.weaponid, hitsshotskills.type) SELECT dcs_events.time, dcs_events.missiontime, dcs_events.InitiatorCoa, aircrafts.id, pilots.id, weapons.id, 'SHOT' FROM dcs_events, aircrafts, pilots, weapons WHERE aircrafts.name=dcs_events.InitiatorType AND pilots.name=dcs_events.InitiatorPlayer AND weapons.name=dcs_events.WeaponName AND dcs_events.event='S_EVENT_SHOT'");
+		$mysqli->query("INSERT INTO hitsshotskills (hitsshotskills.time, hitsshotskills.missiontime, hitsshotskills.initiatorCoa, hitsshotskills.initiatorAcid, hitsshotskills.initiatorPid, hitsshotskills.weaponid, hitsshotskills.type) SELECT events.time, events.missiontime, events.InitiatorCoa, aircrafts.id, pilots.id, weapons.id, 'SHOT' FROM " . $EVENT_TABLE . " AS events, aircrafts, pilots, weapons WHERE aircrafts.name=events.InitiatorType AND pilots.name=events.InitiatorPlayer AND weapons.name=events.WeaponName AND events.event='S_EVENT_SHOT'");
 		
 		
 		$lasthittable = array();
@@ -138,11 +138,12 @@
 				if ($hitevent->time < $event->time - 120) continue;
 				
 				//no hit when target pilot was already killed 60 seconds before (prevent double kill entries)
-				$killtwicetimeout = $hitevent->time - 60;
+				//addition: bms xml import has no double kill possibility
+				$killtwicetimeout = $hitevent->time + 60;
 				$result = $mysqli->query("SELECT hitsshotskills.id FROM hitsshotskills, pilots WHERE pilots.name='" . $event->InitiatorPlayer . "' AND pilots.id=hitsshotskills.targetPid AND hitsshotskills.time>" . $killtwicetimeout . " AND type='KILL'");
-				if ($result->num_rows > 0) {
+				if ($result->num_rows > 0 && $EVENT_TABLE != 'bms_events') {
 					//add hit to statistics
-					countHit($mysqli, $hitevent);
+					countHit($mysqli, $hitevent, $EVENT_TABLE);
 	
 					//set to zero - prevent double kill entrys if pilot ejects and AC crashes directly afterwards
 					unset($lasthittable[$event->InitiatorID]);
@@ -169,7 +170,7 @@
 				
 				
 				//add hit to statistics
-				countHit($mysqli, $hitevent);
+				countHit($mysqli, $hitevent, $EVENT_TABLE);
 				
 				//set to zero - prevent double kill entrys if pilot ejects and AC crashes directly afterwards
 				unset($lasthittable[$event->InitiatorID]);
@@ -181,7 +182,7 @@
 			if (array_key_exists($event->TargetID, $lasthittable) && $event->event == 'S_EVENT_HIT') 
 			{
 				$hitevent = $events[$lasthittable[$event->TargetID]];
-				countHit($mysqli, $hitevent);
+				countHit($mysqli, $hitevent, $EVENT_TABLE);
 				$lasthittable[$event->TargetID] = $id;
 				continue;
 			}
@@ -190,7 +191,7 @@
 			if ($event->event == 'S_EVENT_MISSION_START' || $event->event == 'S_EVENT_MISSION_END') {
 				foreach($lasthittable as $evids) {
 					$hitevent = $events[$evids];
-					countHit($mysqli, $hitevent);
+					countHit($mysqli, $hitevent, $EVENT_TABLE);
 				}
 				unset($lasthittable);
 				$lasthittable = array();
@@ -203,14 +204,14 @@
 		foreach($lasthittable as $evids) {
 			$hitevent = $events[$evids];
 			if ($hitevent->time < time() - 120) {
-				countHit($mysqli, $hitevent);
+				countHit($mysqli, $hitevent, $EVENT_TABLE);
 			}
 		}
 	}
 	
 	
 	
-	function insertFlight($mysqli, $takeoffevent, $event, $endflightevent = false) {
+	function insertFlight($mysqli, $takeoffevent, $event, $EVENT_TABLE, $endflightevent = false) {
 		//calculate flight time in seconds
 		$duration = $event->time - $takeoffevent->time;
 		
@@ -259,12 +260,12 @@
 		}
 		
 		//remove takeoff entry
-		$mysqli->query("DELETE FROM dcs_events WHERE id=" . $takeoffevent->id . " LIMIT 1");
+		$mysqli->query("DELETE FROM " . $EVENT_TABLE . " WHERE id=" . $takeoffevent->id . " LIMIT 1");
 	}
 	
 	
 	
-	function calculateLandingTime($mysqli, $events) {
+	function calculateLandingTime($mysqli, $events, $EVENT_TABLE) {
 		
 		$takeoffevents = array();
 		
@@ -281,14 +282,14 @@
 			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_CRASH' || $event->event == 'S_EVENT_PILOT_DEAD' || $event->event == 'S_EVENT_EJECTION' || $event->event == 'S_EVENT_LAND' || $event->event == 'S_EVENT_DEAD' || $event->event == 'S_EVENT_PLAYER_LEAVE_UNIT')) {
 				
 				$takeoffevent = $events[$takeoffevents[$event->InitiatorID]];
-				insertFlight($mysqli, $takeoffevent, $event);
+				insertFlight($mysqli, $takeoffevent, $event, $EVENT_TABLE);
 				
 				unset($takeoffevents[$event->InitiatorID]);
 			}
 			
 			//flight time illegal time - delete takeoff entry
 			if (array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_TAKEOFF' || $event->event == 'S_EVENT_BIRTH' || $event->event == 'S_EVENT_BIRTH_AIRBORNE')) {
-				$mysqli->query("DELETE FROM dcs_events WHERE id=" . $takeoffevents[$event->InitiatorID] . " LIMIT 1");
+				$mysqli->query("DELETE FROM " . $EVENT_TABLE . " WHERE id=" . $takeoffevents[$event->InitiatorID] . " LIMIT 1");
 				unset($takeoffevents[$event->InitiatorID]);
 				
 				//new takeoff
@@ -301,7 +302,7 @@
 			//flight time illegal time - delete all takeoff entry
 			//if a new mission starts, all previous takeoffs are invalid
 			if ($event->event == 'S_EVENT_MISSION_START') {
-				$mysqli->query("DELETE FROM dcs_events WHERE event IN ('S_EVENT_TAKEOFF', 'S_EVENT_BIRTH_AIRBORNE') AND id<" . $id);
+				$mysqli->query("DELETE FROM " . $EVENT_TABLE . " WHERE event IN ('S_EVENT_TAKEOFF', 'S_EVENT_BIRTH_AIRBORNE') AND id<" . $id);
 				unset($takeoffevents);
 				$takeoffevents = array();
 			}
@@ -310,7 +311,7 @@
 			if ($event->event == 'S_EVENT_MISSION_END') {
 				foreach($takeoffevents as $id) {
 					$takeoffevent = $events[$id];
-					insertFlight($mysqli, $takeoffevent, $event, true);
+					insertFlight($mysqli, $takeoffevent, $event, $EVENT_TABLE, true);
 				}
 				
 				unset($takeoffevents);
@@ -329,7 +330,7 @@
 	
 	
 	
-	function deleteProcessedEvents($mysqli) {
-		$mysqli->query("DELETE FROM dcs_events WHERE event NOT IN ('S_EVENT_TAKEOFF', 'S_EVENT_HIT', 'S_EVENT_BIRTH_AIRBORNE')");
+	function deleteProcessedEvents($mysqli, $EVENT_TABLE) {
+		$mysqli->query("DELETE FROM " . $EVENT_TABLE . " WHERE event NOT IN ('S_EVENT_TAKEOFF', 'S_EVENT_HIT', 'S_EVENT_BIRTH_AIRBORNE')");
 	}
 ?>
