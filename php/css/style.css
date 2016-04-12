@@ -36,3 +36,8 @@ p.pilot_online {
 .table_row_0 {
 	background-color: #efefef;
 }
+
+#map {
+	height: 400px;
+	width: 600px;
+}

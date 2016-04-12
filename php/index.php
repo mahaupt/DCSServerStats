@@ -43,7 +43,8 @@
 	  <a href="?pilots">Pilots</a> - 
 	  <a href="?flights">Flights</a> - 
 	  <a href="?aircrafts">Aircrafts</a> - 
-	  <a href="?weapons">Weapons</a>
+	  <a href="?weapons">Weapons</a> - 
+	  <a href="?map">Live Radar Map</a>
 	  <?php echoSiteContent($mysqli); ?>
 	  <br><br>
 	  <?php echoFooter($mysqli); ?>

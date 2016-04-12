@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 09. Apr 2016 um 22:27
+-- Erstellungszeit: 12. Apr 2016 um 19:11
 -- Server-Version: 10.1.10-MariaDB
 -- PHP-Version: 5.6.19
 
@@ -119,7 +119,8 @@ CREATE TABLE `flights` (
   `landingmissiontime` int(11) NOT NULL,
   `duration` int(11) NOT NULL,
   `coalition` varchar(255) NOT NULL,
-  `endofflighttype` varchar(255) NOT NULL DEFAULT 'landing'
+  `endofflighttype` varchar(255) NOT NULL DEFAULT 'landing',
+  `raw_id` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -190,6 +191,24 @@ CREATE TABLE `pilot_aircrafts` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `position_data`
+--
+
+CREATE TABLE `position_data` (
+  `id` int(11) NOT NULL,
+  `pilotid` int(11) NOT NULL,
+  `aircraftid` int(11) NOT NULL,
+  `lat` double NOT NULL,
+  `lon` double NOT NULL,
+  `alt` double NOT NULL,
+  `time` int(11) NOT NULL,
+  `missiontime` int(11) NOT NULL,
+  `raw_id` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `weapons`
 --
 
@@ -255,6 +274,12 @@ ALTER TABLE `pilot_aircrafts`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indizes für die Tabelle `position_data`
+--
+ALTER TABLE `position_data`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indizes für die Tabelle `weapons`
 --
 ALTER TABLE `weapons`
@@ -273,7 +298,7 @@ ALTER TABLE `aircrafts`
 -- AUTO_INCREMENT für Tabelle `bms_events`
 --
 ALTER TABLE `bms_events`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=143;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT für Tabelle `dcs_events`
 --
@@ -304,6 +329,11 @@ ALTER TABLE `pilots`
 --
 ALTER TABLE `pilot_aircrafts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT für Tabelle `position_data`
+--
+ALTER TABLE `position_data`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=182;
 --
 -- AUTO_INCREMENT für Tabelle `weapons`
 --

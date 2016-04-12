@@ -55,3 +55,35 @@ function timer() {
 		elements[i].innerHTML = hours + ":" + mins + ":" + secs;
 	}
 }
+
+function addMapMarker(map, lat, lng, name, text, path) {
+	var infowindow = new google.maps.InfoWindow({
+    	content: text
+  	});
+  	
+  	var flightPath = new google.maps.Polyline({
+		path: path,
+		geodesic: true,
+		strokeColor: '#FF0000',
+		strokeOpacity: 1.0,
+		strokeWeight: 2
+	});
+  	
+	var marker = new google.maps.Marker({
+		map: map,
+		position: {lat: lat, lng: lng},
+		title: name
+	});
+	
+	marker.addListener('click', function() {
+    	infowindow.open(map, marker);
+  	});
+  	
+  	marker.addListener('mouseover', function() {
+	  	flightPath.setMap(map);
+  	});
+  	
+  	marker.addListener('mouseout', function() {
+	  	flightPath.setMap(null);
+  	});
+}

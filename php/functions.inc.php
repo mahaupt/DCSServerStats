@@ -39,7 +39,14 @@ function echoSiteContent($mysqli)
 		echo "<h2>Weapons</h2><br><br>";
 		echoWeaponsTable($mysqli);
 	} 
-	else 
+	else if (isset($_GET['map'])) {
+		echo "<h2>Live Radar Map</h2><br><br>";
+		echo "<div id=\"map\"></div>";
+		echoMapScript($mysqli);
+		echo "<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyBZoFosVL27IeHx57Wujg-v_aW3slJWItA&callback=initMap\"
+        async defer></script>";
+	} 
+	else
 	{
 		echo "<h2>Pilots</h2><br><br>";
 		echoPilotsTable($mysqli);
@@ -267,6 +274,84 @@ function echoWeaponsTable($mysqli) {
 	}
 	
 	echo "</table><br><em>Gunshots are not counted.</em><br>";
+}
+
+
+function echoMapScript($mysqli) {
+	echo "<script>";
+	
+	echo "var map;
+function initMap() {
+	var myLatLng = {lat: 42.858056, lng: 41.128056};
+	
+	// Specify features and elements to define styles.
+	var customMapType = new google.maps.StyledMapType([
+	{
+		featureType: \"all\",
+		stylers: [
+			{ saturation: -80 }
+		]
+	},{
+		featureType: \"road.arterial\",
+		elementType: \"geometry\",
+		stylers: [
+			{ hue: \"#00ffee\" },
+			{ saturation: 50 }
+			]
+	},{
+		featureType: \"poi.business\",
+		elementType: \"labels\",
+		stylers: [
+			{ visibility: \"off\" }
+		]
+	}
+	], {
+		name: 'Radar'
+	});
+	var customMapTypeId = 'custom_style';
+	
+	//create map
+	var map = new google.maps.Map(document.getElementById('map'), {
+		center: myLatLng,
+		zoom: 6,
+		mapTypeControlOptions: {
+			mapTypeIds: [google.maps.MapTypeId.ROADMAP, customMapTypeId]
+		}
+	});
+	map.mapTypes.set(customMapTypeId, customMapType);
+	map.setMapTypeId(customMapTypeId);
+	
+	// Create a marker and set its position.\n";
+	
+	
+	$result = $mysqli->query("SELECT pd.id, pd.lat, pd.lon, pilots.name as pname, aircrafts.name as acname, pd.raw_id, pd.pilotid, pd.aircraftid, pd.missiontime FROM position_data AS pd, pilots, aircrafts WHERE pd.time>" . (time()-120) . " AND pd.pilotid=pilots.id AND aircrafts.id=pd.aircraftid AND pd.id IN (SELECT MAX(pd2.id) FROM position_data AS pd2 GROUP BY pd2.raw_id)");
+	while($row = $result->fetch_object()) {
+		$text = "<table><tr><td>Pilot:</td><td>" . $row->pname . "</td></tr><tr><td>Aircraft:</td><td>" . $row->acname . "</td></tr></table>";
+		
+		echo "addMapMarker(map, " . $row->lat . ", " . $row->lon . ", '" . $row->pname . "', '" . $text . "', [";
+		
+		//get flight path line
+		$result2 = $mysqli->query("SELECT pd.missiontime, pd.lat, pd.lon FROM position_data AS pd WHERE pd.raw_id=" . $row->raw_id . " ORDER BY pd.time DESC"); //AND pilotid=" . $row->pilotid . " AND aircraftid=" . $row->aircraftid . "
+		$last_misst = $row->missiontime;
+		$i = 0;
+		while($row2 = $result2->fetch_object()) {
+			if ($row2->missiontime > $last_misst) {break;}
+			$last_misst = $row2->missiontime;
+			
+			if ($i != 0) {echo ",";}
+			echo "{lat: " . $row2->lat . ",lng: " . $row2->lon . "}";
+			
+			$i++;
+		}
+		echo "]);";
+	}
+	
+	
+	echo "}";
+	
+	
+	
+	echo "</script>";
 }
  	
 ?>

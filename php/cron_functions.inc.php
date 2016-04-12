@@ -59,6 +59,8 @@
 		$mysqli->query($query6);
 		$mysqli->query($query7);
 
+		//position data
+		$mysqli->query("INSERT INTO position_data (position_data.lat, position_data.lon, position_data.alt, position_data.time, position_data.missiontime, position_data.raw_id, position_data.pilotid, position_data.aircraftid) SELECT CAST(events.TargetType AS DECIMAL(18,12)), CAST(events.TargetPlayer AS DECIMAL(18,12)), CAST(events.TargetCoa AS DECIMAL(18,12)), events.time, events.missiontime, events.InitiatorID, pilots.id, aircrafts.id FROM " . $EVENT_TABLE . " AS events, pilots, aircrafts WHERE pilots.name=events.InitiatorPlayer AND aircrafts.name=events.InitiatorType AND events.event='S_EVENT_POSITION' ORDER BY events.time ASC");
 	}
 	
 	
@@ -258,7 +260,7 @@
 				$takeoffevent->InitiatorPlayer . "' AND aircrafts.name='" . $takeoffevent->InitiatorType . "'");
 			
 			//insert into flight log
-			$mysqli->query("INSERT INTO flights (flights.pilotid, flights.aircraftid, flights.takeofftime, flights.takeoffmissiontime, flights.landingtime, flights.landingmissiontime, flights.duration, flights.coalition, flights.endofflighttype) SELECT pilots.id, aircrafts.id, " . $takeoffevent->time . ", " . $takeoffevent->missiontime . ", " . $event->time . ", " . $event->missiontime . ", " . $duration . ", '" . $takeoffevent->InitiatorCoa . "', '" . $eoftype . "' FROM pilots, aircrafts WHERE pilots.name='" . $takeoffevent->InitiatorPlayer . "' AND aircrafts.name='" . $takeoffevent->InitiatorType . "'");
+			$mysqli->query("INSERT INTO flights (flights.pilotid, flights.aircraftid, flights.takeofftime, flights.takeoffmissiontime, flights.landingtime, flights.landingmissiontime, flights.duration, flights.coalition, flights.endofflighttype, flights.raw_id) SELECT pilots.id, aircrafts.id, " . $takeoffevent->time . ", " . $takeoffevent->missiontime . ", " . $event->time . ", " . $event->missiontime . ", " . $duration . ", '" . $takeoffevent->InitiatorCoa . "', '" . $eoftype . "', " . $takeoffevent->InitiatorID . " FROM pilots, aircrafts WHERE pilots.name='" . $takeoffevent->InitiatorPlayer . "' AND aircrafts.name='" . $takeoffevent->InitiatorType . "'");
 		}
 		
 		//remove takeoff entry
