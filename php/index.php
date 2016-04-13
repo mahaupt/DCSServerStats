@@ -26,8 +26,9 @@
 	$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
 	
-	$mysqli = new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB);
+	$simStats = new SimStats(new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB));
 	
+	if (isset($_GET['mapjson'])) die($simStats->getMapInfoJSON());
 ?>
 
 <!doctype html>
@@ -45,9 +46,9 @@
 	  <a href="?aircrafts">Aircrafts</a> - 
 	  <a href="?weapons">Weapons</a> - 
 	  <a href="?map">Live Radar Map</a>
-	  <?php echoSiteContent($mysqli); ?>
+	  <?php $simStats->echoSiteContent(); ?>
 	  <br><br>
-	  <?php echoFooter($mysqli); ?>
+	  <?php $simStats->echoFooter(); ?>
   </body>
 </html>
 

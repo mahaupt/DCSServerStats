@@ -120,7 +120,7 @@ public class DCSServerStats {
 			String urlParameters = "pw=" + pw;
 			
 			int evts = 0;
-			while(eventQueue.size() > 0 && evts < 20) {
+			while(eventQueue.size() > 0 && evts < 100) {
 				String sentence = eventQueue.poll();
 				
 				//split data

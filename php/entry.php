@@ -22,7 +22,7 @@
 	//password check
 	if (!isset($_POST['pw']) || ($_POST['pw'] !== $PASSWORD)) die();	
 	//parameter check
-	if ($_POST['size'] <= 0 && $_POST['size'] > 20) die('wrong param');
+	if ($_POST['size'] <= 0 && $_POST['size'] > 100) die('wrong param');
 	
 	
 	//debugging

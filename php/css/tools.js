@@ -1,3 +1,7 @@
+var map;
+var markers = [];
+
+
 function timer() {
 	window.setTimeout(timer, 1000);
 	
@@ -56,13 +60,79 @@ function timer() {
 	}
 }
 
-function addMapMarker(map, lat, lng, name, text, path) {
+
+function initMap() {
+	var myLatLng = {lat: 42.858056, lng: 41.128056};
+	
+	// Specify features and elements to define styles.
+	var customMapType = new google.maps.StyledMapType([
+	{
+		featureType: "all",
+		stylers: [
+			{ saturation: -80 }
+		]
+	},{
+		featureType: "road.arterial",
+		elementType: "geometry",
+		stylers: [
+			{ hue: "#00ffee" },
+			{ saturation: 50 }
+			]
+	},{
+		featureType: "poi.business",
+		elementType: "labels",
+		stylers: [
+			{ visibility: "off" }
+		]
+	}
+	], {
+		name: 'Radar'
+	});
+	var customMapTypeId = 'custom_style';
+	
+	//create map
+	map = new google.maps.Map(document.getElementById('map'), {
+		center: myLatLng,
+		zoom: 7,
+		mapTypeControlOptions: {
+			mapTypeIds: [google.maps.MapTypeId.ROADMAP, customMapTypeId]
+		}
+	});
+	map.mapTypes.set(customMapTypeId, customMapType);
+	map.setMapTypeId(customMapTypeId);
+	
+	loadMapInfo();
+}
+
+
+function loadMapInfo() {
+	//load new map info every 30 secs
+	window.setTimeout(loadMapInfo, 30000);
+	
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			deleteMarkers();
+			var json = JSON.parse(xhttp.responseText);
+			for (i=0; i < json.flights.length; i++) {
+				var text = "<table><tr><td>Pilot:</td><td>" + json.flights[i].pilot + "</td></tr><tr><td>Aircraft:</td><td>" + json.flights[i].ac + "</td></tr></table>";
+				
+				addMapMarker(json.flights[i].lat, json.flights[i].lng, json.flights[i].pilot, text, json.flights[i].path);
+			}
+		}
+	};
+	xhttp.open("GET", "index.php?mapjson", true);
+	xhttp.send();
+}
+
+
+function addMapMarker(lat, lng, name, text, pathline) {
 	var infowindow = new google.maps.InfoWindow({
     	content: text
   	});
   	
   	var flightPath = new google.maps.Polyline({
-		path: path,
+		path: pathline,
 		geodesic: true,
 		strokeColor: '#FF0000',
 		strokeOpacity: 1.0,
@@ -86,4 +156,20 @@ function addMapMarker(map, lat, lng, name, text, path) {
   	marker.addListener('mouseout', function() {
 	  	flightPath.setMap(null);
   	});
+  	
+  	markers.push(marker);
+}
+
+
+// Sets the map on all markers in the array.
+function setMapOnAll(map) {
+	for (var i = 0; i < markers.length; i++) {
+		markers[i].setMap(map);
+	}
+}
+
+// Deletes all markers in the array by removing references to them.
+function deleteMarkers() {
+	setMapOnAll(null);
+	markers = [];
 }
