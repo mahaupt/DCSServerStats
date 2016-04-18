@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 12. Apr 2016 um 19:11
+-- Erstellungszeit: 18. Apr 2016 um 22:31
 -- Server-Version: 10.1.10-MariaDB
 -- PHP-Version: 5.6.19
 
@@ -153,6 +153,7 @@ CREATE TABLE `hitsshotskills` (
 CREATE TABLE `pilots` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
+  `disp_name` varchar(255) NOT NULL,
   `flighttime` int(11) NOT NULL DEFAULT '0',
   `flights` int(11) NOT NULL DEFAULT '0',
   `crashes` int(11) NOT NULL DEFAULT '0',
@@ -293,7 +294,7 @@ ALTER TABLE `weapons`
 -- AUTO_INCREMENT für Tabelle `aircrafts`
 --
 ALTER TABLE `aircrafts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 --
 -- AUTO_INCREMENT für Tabelle `bms_events`
 --
@@ -308,37 +309,37 @@ ALTER TABLE `dcs_events`
 -- AUTO_INCREMENT für Tabelle `dcs_parser_log`
 --
 ALTER TABLE `dcs_parser_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=307;
 --
 -- AUTO_INCREMENT für Tabelle `flights`
 --
 ALTER TABLE `flights`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 --
 -- AUTO_INCREMENT für Tabelle `hitsshotskills`
 --
 ALTER TABLE `hitsshotskills`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
 --
 -- AUTO_INCREMENT für Tabelle `pilots`
 --
 ALTER TABLE `pilots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 --
 -- AUTO_INCREMENT für Tabelle `pilot_aircrafts`
 --
 ALTER TABLE `pilot_aircrafts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 --
 -- AUTO_INCREMENT für Tabelle `position_data`
 --
 ALTER TABLE `position_data`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=182;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1121;
 --
 -- AUTO_INCREMENT für Tabelle `weapons`
 --
 ALTER TABLE `weapons`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

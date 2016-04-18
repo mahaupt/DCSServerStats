@@ -18,6 +18,7 @@
 	
 	require_once "config.inc.php";
 	require_once "cron_functions.inc.php";
+	require_once "functions.inc.php";
 	
 	
 	
@@ -37,46 +38,13 @@
 	$driver = new mysqli_driver();
 	$driver->report_mode = MYSQLI_REPORT_ERROR;
 	
-	
-	//sparsing log data
-	$dcs_parser_log = new stdClass();
-	$dcs_parser_log->time = time();
-	$dcs_parser_log->starttimems = microtime(true) * 1000;
-	
-	
-	//establish database connection
 	$mysqli = new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB);
 	
+	//cron
+	$dcsstats = new DCSStatsCron($mysqli, $EVENT_TABLE);
+	$dcsstats->startProcessing();
 	
-	//lock tables
-	//$mysqli->query("LOCK TABLES dcs_events WRITE, pilots READ, aircrafts");
-
-	
-	//get all objects from database
-	$dcs_events = getAllDbObjects($mysqli, $EVENT_TABLE);
-	$dcs_parser_log->events = sizeof($dcs_events);
-	
-	//add new weapons, pilots, aircrafts to database
-	addNewEntrys($mysqli, $EVENT_TABLE);
-	//update counters
-	updateCounters($mysqli, $EVENT_TABLE);
-	//process hits shots and kills
-	addHitsShotsKills($mysqli, $dcs_events, $EVENT_TABLE);
-	//process landing and takeoff times
-	calculateLandingTime($mysqli, $dcs_events, $EVENT_TABLE);
-	//delete events
-	deleteProcessedEvents($mysqli, $EVENT_TABLE);
-	
-	
-	//unlock tables
-	//$mysqli->query("UNLOCK TABLES");
-	
-	
-	//end parsing
-	$dcs_parser_log->endtimems = microtime(true) * 1000;
-	$dcs_parser_log->durationms = round($dcs_parser_log->endtimems - $dcs_parser_log->starttimems);
-	
-	//write log entry
-	$query = "INSERT INTO dcs_parser_log SET time='" . $dcs_parser_log->time . "', durationms='" . $dcs_parser_log->durationms . "', events='" . $dcs_parser_log->events . "'";
-	$mysqli->query($query);
+	//auto merge pilots
+	$simStatsAdmin = new SimStatsAdmin($mysqli);
+	$simStatsAdmin->autoMergePilots();
 ?>

@@ -208,12 +208,27 @@ class XML_Import {
 		}
 		
 		//generic pilot names
-		if (strpos($name, "Pilot #") !== false) $name = "AI";
-		if (strpos($name, "Cougar #") !== false) $name = "AI";
-		if (strpos($name, "Mastic #") !== false) $name = "AI";
+		if (strpos($name, "Pilot") !== false) $name = "AI";
+		if (strpos($name, "Cougar") !== false) $name = "AI";
+		if (strpos($name, "Mastic") !== false) $name = "AI";
 		if (strpos($name, "Cyborg") !== false) $name = "AI";
-		if (strpos($name, "Unit #") !== false) $name = "AI";
-		if (strpos($name, "Einheit #") !== false) $name = "AI";
+		if (strpos($name, "Cowboy") !== false) $name = "AI";
+		if (strpos($name, "Falcon") !== false) $name = "AI";
+		if (strpos($name, "Hornet") !== false) $name = "AI";
+		if (strpos($name, "Texico") !== false) $name = "AI";
+		if (strpos($name, "Ghost") !== false) $name = "AI";
+		if (strpos($name, "Diamond") !== false) $name = "AI";
+		if (strpos($name, "Panther") !== false) $name = "AI";
+		if (strpos($name, "Banshee") !== false) $name = "AI";
+		if (strpos($name, "Hornet") !== false) $name = "AI";
+		if (strpos($name, "Camel") !== false) $name = "AI";
+		if (strpos($name, "Chalis") !== false) $name = "AI";
+		if (strpos($name, "Nightmare") !== false) $name = "AI";
+		if (strpos($name, "Dragon") !== false) $name = "AI";
+		if (strpos($name, "Devil") !== false) $name = "AI";
+		if (strpos($name, "AWACS") !== false) $name = "AI";
+		if (strpos($name, "Unit") !== false) $name = "AI";
+		if (strpos($name, "Einheit") !== false) $name = "AI";
 					
 		return $name;
 	}
