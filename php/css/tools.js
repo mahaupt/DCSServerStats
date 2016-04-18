@@ -1,5 +1,8 @@
 var map;
 var markers = [];
+var mapCenter = {lat: 42.858056, lng: 41.128056};
+var mapZoom = 7;
+var flightId = -1;
 
 
 function timer() {
@@ -61,9 +64,30 @@ function timer() {
 }
 
 
+function setMapCenterAndZoom(center, zoom) {
+	mapCenter = center;
+	mapZoom = zoom;
+}
+
+function setMapZoom(zoom) {
+	mapZoom = zoom;
+}
+
+function setFlightId(fid) {
+	flightId = fid;
+}
+
+function initLiveRadarMap() {
+	initMap();
+	loadLiveRadarMapInfo();
+}
+
+function initFlightPathMap() {
+	initMap();
+	loadFlightPathMap();
+}
+
 function initMap() {
-	var myLatLng = {lat: 42.858056, lng: 41.128056};
-	
 	// Specify features and elements to define styles.
 	var customMapType = new google.maps.StyledMapType([
 	{
@@ -92,22 +116,20 @@ function initMap() {
 	
 	//create map
 	map = new google.maps.Map(document.getElementById('map'), {
-		center: myLatLng,
-		zoom: 7,
+		center: mapCenter,
+		zoom: mapZoom,
 		mapTypeControlOptions: {
 			mapTypeIds: [google.maps.MapTypeId.ROADMAP, customMapTypeId]
 		}
 	});
 	map.mapTypes.set(customMapTypeId, customMapType);
 	map.setMapTypeId(customMapTypeId);
-	
-	loadMapInfo();
 }
 
 
-function loadMapInfo() {
+function loadLiveRadarMapInfo() {
 	//load new map info every 30 secs
-	window.setTimeout(loadMapInfo, 30000);
+	window.setTimeout(loadLiveRadarMapInfo, 30000);
 	
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
@@ -117,7 +139,7 @@ function loadMapInfo() {
 			for (i=0; i < json.flights.length; i++) {
 				var text = "<table><tr><td>Pilot:</td><td>" + json.flights[i].pilot + "</td></tr><tr><td>Aircraft:</td><td>" + json.flights[i].ac + "</td></tr></table>";
 				
-				addMapMarker(json.flights[i].lat, json.flights[i].lng, json.flights[i].pilot, text, json.flights[i].path);
+				addMapMarker(json.flights[i].lat, json.flights[i].lng, json.flights[i].pilot, text, json.flights[i].path, false);
 			}
 		}
 	};
@@ -126,7 +148,22 @@ function loadMapInfo() {
 }
 
 
-function addMapMarker(lat, lng, name, text, pathline) {
+function loadFlightPathMap() {
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			deleteMarkers();
+			var json = JSON.parse(xhttp.responseText);
+			var text = "<b>Landing Point</b><table><tr><td>Pilot:</td><td>" + json.pilot + "</td></tr><tr><td>Aircraft:</td><td>" + json.ac + "</td></tr></table>";
+			addMapMarker(json.path[0].lat, json.path[0].lng, json.pilot, text, json.path, true);
+		}
+	};
+	xhttp.open("GET", "index.php?mapjsonid=" + flightId, true);
+	xhttp.send();
+}
+
+
+function addMapMarker(lat, lng, name, text, pathline, show_always) {
 	var infowindow = new google.maps.InfoWindow({
     	content: text
   	});
@@ -149,13 +186,17 @@ function addMapMarker(lat, lng, name, text, pathline) {
     	infowindow.open(map, marker);
   	});
   	
-  	marker.addListener('mouseover', function() {
+  	if (!show_always) {
+	  	marker.addListener('mouseover', function() {
+		  	flightPath.setMap(map);
+	  	});
+	  	
+	  	marker.addListener('mouseout', function() {
+		  	flightPath.setMap(null);
+	  	});
+  	} else {
 	  	flightPath.setMap(map);
-  	});
-  	
-  	marker.addListener('mouseout', function() {
-	  	flightPath.setMap(null);
-  	});
+  	}
   	
   	markers.push(marker);
 }

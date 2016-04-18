@@ -28,7 +28,9 @@
 	
 	$simStats = new SimStats(new mysqli($MYSQL_HOST, $MYSQL_USER, $MYSQL_PASS, $MYSQL_DB));
 	
-	if (isset($_GET['mapjson'])) die($simStats->getMapInfoJSON());
+	//for ajax json data import
+	if (isset($_GET['mapjson'])) die($simStats->getLiveRadarMapInfoJSON());
+	if (isset($_GET['mapjsonid'])) die($simStats->getFlightPathMapInfoJSON($_GET['mapjsonid']));
 ?>
 
 <!doctype html>
@@ -48,7 +50,7 @@
 	  <a href="?map">Live Radar Map</a>
 	  <?php $simStats->echoSiteContent(); ?>
 	  <br><br>
-	  <?php $simStats->echoFooter(); ?>
+	  <?php $simStats->echoUpdateInfo(); ?>
   </body>
 </html>
 
