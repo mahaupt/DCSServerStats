@@ -15,7 +15,7 @@
 if CbaconPosExp==nil then		-- Protection against multiple references (typically wrong script installation)
 
 
-local UDPip = "192.168.178.29"
+local UDPip = "127.0.0.1"
 local UDPport = "9182"
 
 
