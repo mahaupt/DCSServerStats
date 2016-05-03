@@ -1,6 +1,6 @@
 var map;
 var markers = [];
-var mapCenter = {lat: 42.858056, lng: 41.128056};
+var mapCenter = {lat: 38.18638677, lng: -115.16967773};
 var mapZoom = 7;
 var flightId = -1;
 
@@ -64,9 +64,13 @@ function timer() {
 }
 
 
-function setMapCenterAndZoom(center, zoom) {
+function flushMapChanges() {
+	map.panTo(mapCenter);
+	map.setZoom(mapZoom);
+}
+
+function setMapCenter(center) {
 	mapCenter = center;
-	mapZoom = zoom;
 }
 
 function setMapZoom(zoom) {

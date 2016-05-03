@@ -236,6 +236,23 @@ class SimStats {
 	}
 	
 	
+	public function quicksort($seq, $key) {
+	    if(!count($seq)) return $seq;
+		$pivot= $seq[0];
+	    $low = array();
+	    $high = array();
+	    $length = count($seq);
+	    for($i=1; $i < $length; $i++) {
+	        if($seq[$i]->$key <= $pivot->$key) {
+	            $low [] = $seq[$i];
+	        } else {
+	            $high[] = $seq[$i];
+	        }
+	    }
+		return array_merge($this->quicksort($low, $key), array($pivot), $this->quicksort($high, $key));
+	}
+	
+	
 	
 	public function getFlightData($flightid) {
 		$flightData = new stdClass();
@@ -276,8 +293,20 @@ class SimStats {
 			$flightData->events[] = $event;
 			
 			
-			//get outgoing shots and kills
-			$result = $this->mysqli->query("SELECT hsk.time, weapons.type AS weapontype, weapons.name AS weaponname, hsk.type AS event, pilots.name AS targetpname, aircrafts.name AS targetacname FROM hitsshotskills AS hsk, weapons, aircrafts, pilots WHERE hsk.initiatorPid=" . $row_pilotid . " AND hsk.initiatorAcid=" . $row_aircraftid . " AND hsk.time<" . $row_landingtime  . " AND hsk.time>" . $row_takeofftime . " AND hsk.weaponid=weapons.id AND aircrafts.id=hsk.targetAcid AND pilots.id=hsk.targetPid");
+			//get outgoing shots
+			$result = $this->mysqli->query("SELECT hsk.time, weapons.type AS weapontype, weapons.name AS weaponname, hsk.type AS event FROM hitsshotskills AS hsk, weapons WHERE hsk.initiatorPid=" . $row_pilotid . " AND hsk.initiatorAcid=" . $row_aircraftid . " AND hsk.time<" . $row_landingtime  . " AND hsk.time>" . $row_takeofftime . " AND hsk.weaponid=weapons.id AND hsk.type='SHOT'");
+			while($row = $result->fetch_object()) {
+				$row->incoming = false;
+				$row->initiatorpname = $flightData->pilot;
+				$row->initiatoracname = $flightData->aircraft;
+				$row->targetpname = "";
+				$row->targetacname = "";
+				$flightData->events[] = $row;
+			}
+			
+			
+			//get outgoing hits and kills
+			$result = $this->mysqli->query("SELECT hsk.time, weapons.type AS weapontype, weapons.name AS weaponname, hsk.type AS event, pilots.name AS targetpname, aircrafts.name AS targetacname FROM hitsshotskills AS hsk, weapons, aircrafts, pilots WHERE hsk.initiatorPid=" . $row_pilotid . " AND hsk.initiatorAcid=" . $row_aircraftid . " AND hsk.time<" . $row_landingtime  . " AND hsk.time>" . $row_takeofftime . " AND hsk.weaponid=weapons.id AND aircrafts.id=hsk.targetAcid AND pilots.id=hsk.targetPid AND hsk.type<>'SHOT'");
 			while($row = $result->fetch_object()) {
 				$row->incoming = false;
 				$row->initiatorpname = $flightData->pilot;
@@ -306,6 +335,8 @@ class SimStats {
 			$event->targetacname = "";
 			$flightData->events[] = $event;
 			
+			
+			$flightData->events = $this->quicksort($flightData->events, "time");
 			
 			return $flightData;
 		}
@@ -514,12 +545,16 @@ class SimStats {
 	
 	
 	public function echoLiveRadarMapScript() {
+		echo "<br><a href='#' onclick=\"setMapCenter({lat: 42.858056, lng: 41.128056});setMapZoom(7);flushMapChanges();\">Caucasus</a> - <a href='#' onclick=\"setMapCenter({lat: 38.18638677, lng: -115.16967773});setMapZoom(7);flushMapChanges();\">Nevada</a><br>";
+		
 		echo "<div id=\"map\"></div>";
 		echo "<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyBZoFosVL27IeHx57Wujg-v_aW3slJWItA&callback=initLiveRadarMap\"
 	        async defer></script>";
 	}
 	
 	public function echoMapScriptForFlight($flightid) {
+		echo "<br><a href='#' onclick=\"setMapCenter({lat: 42.858056, lng: 41.128056});setMapZoom(6);flushMapChanges();\">Caucasus</a> - <a href='#' onclick=\"setMapCenter({lat: 38.18638677, lng: -115.16967773});setMapZoom(6);flushMapChanges();\">Nevada</a><br>";
+		
 		echo "<div id=\"map\" style=\"width: 600px; height: 400px;\"></div>";
 		echo "<script>setFlightId(" . $flightid . ");setMapZoom(6);</script>";
 		echo "<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyBZoFosVL27IeHx57Wujg-v_aW3slJWItA&callback=initFlightPathMap\"
@@ -676,17 +711,23 @@ class SimStatsAdmin extends SimStats {
 	}
 	
 	public function mergePilot($pilotid_from, $pilotid_to) {
-		$prep = $this->mysqli->prepare("SELECT disp_name, SUM(flighttime), SUM(flights), SUM(crashes), SUM(ejects), SUM(hits), SUM(shots), SUM(kills), SUM(inc_hits), SUM(inc_kills) FROM pilots WHERE id IN (?, ?)");
+		$prep = $this->mysqli->prepare("SELECT disp_name, SUM(flighttime), SUM(flights), SUM(crashes), SUM(ejects), SUM(hits), SUM(shots), SUM(kills), SUM(inc_hits), SUM(inc_kills), SUM(show_kills) FROM pilots WHERE id IN (?, ?)");
 		$prep->bind_param('ii', $pilotid_from, $pilotid_to);
 		$prep->execute();
-		$prep->bind_result($row_disp_name, $row_flighttime, $row_flights, $row_crashes, $row_ejects, $row_hits, $row_shots, $row_kills, $row_inc_hits, $row_inc_kills);
+		$prep->bind_result($row_disp_name, $row_flighttime, $row_flights, $row_crashes, $row_ejects, $row_hits, $row_shots, $row_kills, $row_inc_hits, $row_inc_kills, $row_show_kills);
 		
 		if ($prep->fetch()) {
 			$prep->close();
 			
+			//
+			$show_kills = 0;
+			if ($row_show_kills == 2) {
+				$show_kills = 1;
+			}
+			
 			//take new pilots data
-			$prep2 = $this->mysqli->prepare("UPDATE pilots SET disp_name=?, flighttime=?, flights=?, crashes=?, ejects=?, hits=?, shots=?, kills=?, inc_hits=?, inc_kills=? WHERE id=?");
-			$prep2->bind_param('siiiiiiiiii', $row_disp_name, $row_flighttime, $row_flights, $row_crashes, $row_ejects, $row_hits, $row_shots, $row_kills, $row_inc_hits, $row_inc_kills, $pilotid_to);
+			$prep2 = $this->mysqli->prepare("UPDATE pilots SET disp_name=?, flighttime=?, flights=?, crashes=?, ejects=?, hits=?, shots=?, kills=?, inc_hits=?, inc_kills=?, show_kills=? WHERE id=?");
+			$prep2->bind_param('siiiiiiiiiii', $row_disp_name, $row_flighttime, $row_flights, $row_crashes, $row_ejects, $row_hits, $row_shots, $row_kills, $row_inc_hits, $row_inc_kills, $show_kills, $pilotid_to);
 			$prep2->execute();
 			$prep2->close();
 			
