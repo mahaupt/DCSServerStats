@@ -50,7 +50,7 @@ CbaconPosExpClass = {
 			for k,v in pairs(o) do
 				if v.Type.level1 == 1 then
 					local unitName = v.UnitName;
-					if (v.GroupName == "AI") then
+					if not v.Flags["Human"] then
 						unitName = "AI"
 					end
 					
