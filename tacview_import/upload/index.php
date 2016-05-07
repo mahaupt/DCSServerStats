@@ -98,7 +98,6 @@
 <?php
 	if ($PARSE_FILE && $AUTO_CRON && !$anti_bruteforce) {
 		$CRON_NO_CLI_SET = true;
-		$OVERRIDE_EVENT_TABLE = "bms_events";
 		
 		$import = new XML_Import($PARSE_FILE_NAME);
 		$import->writeToDatabase($mysqli, $OVERRIDE_EVENT_TABLE);
