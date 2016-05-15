@@ -50,10 +50,10 @@
 				$totstr = $_POST["th"] . ":" . $_POST["tm"] . "-" . $_POST["td"] . "." . $_POST["tmo"] . "." . $_POST["ty"];
 				$ldgtstr = $_POST["lh"] . ":" . $_POST["lm"] . "-" . $_POST["ld"] . "." . $_POST["lmo"] . "." . $_POST["ly"];
 				
-				$takeofftime = DateTime::createFromFormat("H:i-d.m.Y", $totstr, new DateTimeZone("UTC"));
-				$landingtime = DateTime::createFromFormat("H:i-d.m.Y", $ldgtstr, new DateTimeZone("UTC"));
+				$takeofftime = DateTime::createFromFormat("H:i-d.m.Y", $totstr, new DateTimeZone("EUROPE"));
+				$landingtime = DateTime::createFromFormat("H:i-d.m.Y", $ldgtstr, new DateTimeZone("EUROPE"));
 				
-				$message = $simStatsAdmin->addFlight(intval($_POST["pilot"]), intval(["aircraft"]), $takeofftime->getTimestamp(), $landingtime->getTimestamp());
+				$message = $simStatsAdmin->addFlight(intval($_POST["pilot"]), intval($_POST["aircraft"]), $takeofftime->getTimestamp(), $landingtime->getTimestamp(), $_POST["coalition"], $_POST["eoftype"]);
 			}
 		} else {
 			if (isset($_POST["rename"])) {
@@ -65,6 +65,12 @@
 			} else if(isset($_GET["makeai"])) {
 				$message = "Declared Pilot as AI";
 				$simStatsAdmin->renamePilot($_GET["makeai"], "AI");
+			} else if(isset($_GET["showhidekills"])) {
+				$message = "Pilot Kills Display Toggle";
+				$simStatsAdmin->setShowKillsFlag($_GET["showhidekills"], (bool)$_GET["showkills"]);
+			} else if(isset($_GET["forceland"])) {
+				$message = "Force Landed Pilot";
+				$simStatsAdmin->landFlight($_GET["forceland"], time());
 			} else if(isset($_GET["delete"])) {
 				$message = "Pilot Removed";
 				$simStatsAdmin->removePilot($_GET['delete']);
@@ -79,7 +85,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMSStats Admin Page</title>
+    <title>DCSServerStats Admin Page</title>
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../css/tools.js"></script>
   </head>
