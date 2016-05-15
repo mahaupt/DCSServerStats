@@ -42,24 +42,33 @@
 		
 		
 		$message="";
-		if (isset($_POST["rename"])) {
-			$message = "Pilot renamed";
-			$simStatsAdmin->renamePilot($_POST["pilotid"], $_POST["newname"]);
-		} else if (isset($_POST["transferpilot"])) {
-			$message = "Pilot transfered";
-			$simStatsAdmin->mergePilot($_POST["frompilotid"], $_POST["topilotid"]);
-		} else if(isset($_GET["makeai"])) {
-			$message = "Declared Pilot as AI";
-			$simStatsAdmin->renamePilot($_GET["makeai"], "AI");
-		} else if(isset($_GET["showhidekills"])) {
-			$message = "Pilot Kills Display Toggle";
-			$simStatsAdmin->setShowKillsFlag($_GET["showhidekills"], (bool)$_GET["showkills"]);
-		} else if(isset($_GET["forceland"])) {
-			$message = "Force Landed Pilot";
-			$simStatsAdmin->landFlight($_GET["forceland"], time());
-		} else if(isset($_GET["delete"])) {
-			$message = "Pilot Removed";
-			$simStatsAdmin->removePilot($_GET['delete']);
+		if (isset($_GET['flights'])) {
+			if (isset($_GET['delete'])) {
+				$simStatsAdmin->removeFlight($_GET['delete']);
+			} else if (isset($_POST['addflight'])) {
+				
+				$totstr = $_POST["th"] . ":" . $_POST["tm"] . "-" . $_POST["td"] . "." . $_POST["tmo"] . "." . $_POST["ty"];
+				$ldgtstr = $_POST["lh"] . ":" . $_POST["lm"] . "-" . $_POST["ld"] . "." . $_POST["lmo"] . "." . $_POST["ly"];
+				
+				$takeofftime = DateTime::createFromFormat("H:i-d.m.Y", $totstr, new DateTimeZone("UTC"));
+				$landingtime = DateTime::createFromFormat("H:i-d.m.Y", $ldgtstr, new DateTimeZone("UTC"));
+				
+				$message = $simStatsAdmin->addFlight(intval($_POST["pilot"]), intval(["aircraft"]), $takeofftime->getTimestamp(), $landingtime->getTimestamp());
+			}
+		} else {
+			if (isset($_POST["rename"])) {
+				$message = "Pilot renamed";
+				$simStatsAdmin->renamePilot($_POST["pilotid"], $_POST["newname"]);
+			} else if (isset($_POST["transferpilot"])) {
+				$message = "Pilot transfered";
+				$simStatsAdmin->mergePilot($_POST["frompilotid"], $_POST["topilotid"]);
+			} else if(isset($_GET["makeai"])) {
+				$message = "Declared Pilot as AI";
+				$simStatsAdmin->renamePilot($_GET["makeai"], "AI");
+			} else if(isset($_GET["delete"])) {
+				$message = "Pilot Removed";
+				$simStatsAdmin->removePilot($_GET['delete']);
+			}
 		}
 	}
 	
@@ -70,14 +79,20 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DCSServerStats Admin Page</title>
+    <title>BMSStats Admin Page</title>
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../css/tools.js"></script>
   </head>
   <body>
+	<a href="?">Pilots</a> - <a href="?flights">Flights</a><br><br>
   	<?php
 	  	if ($logged_in) {
-			$simStatsAdmin->echoAdminPilotsTable();  	
+		  	if (isset($_GET['flights'])) {
+			  	$simStatsAdmin->echoAddFlight();
+				$simStatsAdmin->echoAdminFlightsTable();
+			} else {
+				$simStatsAdmin->echoAdminPilotsTable(); 
+			}	
 			echo $message;
 		} else {
 	?>
