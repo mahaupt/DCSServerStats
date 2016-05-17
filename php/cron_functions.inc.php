@@ -118,9 +118,9 @@ class DCSStatsCron {
 	//update the counters in the database for crashes, ejections, shots
 	private function updateCounters() {
 		//update counters on pilot table
-		$this->mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.shots = pilots.shots + (SELECT COUNT(events.id) FROM " . $this->event_table . " AS events WHERE events.event='S_EVENT_SHOT' AND events.WeaponCat='MISSILE' AND events.InitiatorPlayer=pilots.name)");
-		$this->mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.crashes = pilots.crashes + (SELECT COUNT(events.id) FROM " . $this->event_table . " AS events WHERE events.event='S_EVENT_CRASH' AND events.InitiatorPlayer=pilots.name)");
-		$this->mysqli->query("UPDATE pilots SET pilots.lastactive=" . time() . ", pilots.ejects = pilots.ejects + (SELECT COUNT(events.id) FROM " . $this->event_table . " AS events WHERE events.event='S_EVENT_EJECTION' AND events.InitiatorPlayer=pilots.name)");
+		$this->mysqli->query("UPDATE pilots SET pilots.shots = pilots.shots + (SELECT COUNT(events.id) FROM " . $this->event_table . " AS events WHERE events.event='S_EVENT_SHOT' AND events.WeaponCat='MISSILE' AND events.InitiatorPlayer=pilots.name)");
+		$this->mysqli->query("UPDATE pilots SET pilots.crashes = pilots.crashes + (SELECT COUNT(events.id) FROM " . $this->event_table . " AS events WHERE events.event='S_EVENT_CRASH' AND events.InitiatorPlayer=pilots.name)");
+		$this->mysqli->query("UPDATE pilots SET pilots.ejects = pilots.ejects + (SELECT COUNT(events.id) FROM " . $this->event_table . " AS events WHERE events.event='S_EVENT_EJECTION' AND events.InitiatorPlayer=pilots.name)");
 		
 		//update counters on aircraft table
 		$this->mysqli->query("UPDATE aircrafts SET aircrafts.shots = aircrafts.shots + (SELECT COUNT(events.id) FROM " . $this->event_table . " AS events WHERE aircrafts.name=events.InitiatorType AND events.InitiatorGroupCat='AIRPLANE' AND events.event='S_EVENT_SHOT' AND events.WeaponCat='MISSILE')");
@@ -329,6 +329,8 @@ class DCSStatsCron {
 			//save takeoff events
 			if (!array_key_exists($event->InitiatorID, $takeoffevents) && ($event->event == 'S_EVENT_TAKEOFF' || $event->event == 'S_EVENT_BIRTH_AIRBORNE')) {
 				$takeoffevents[$event->InitiatorID] = $id;
+				//update last active time
+				$this->mysqli->query("UPDATE pilots SET lastactive=" . time() . " WHERE name='" . $event->InitiatorPlayer. "' Limit 1");
 				continue;
 			}
 			
