@@ -39,7 +39,7 @@ dofile(lfs.writedir()..'Scripts/DCSUDPMissionDataExport.lua') --<-- add this lin
 [...]
 ```
 
-3. (For Position Updates) Edit your Export.lua and add this line:
+3. (For Position Updates) Edit your Export.lua in %USERPROFILE%/Saved Games/DCS World/Scripts and add this line:
 ```lua
 dofile(lfs.writedir()..'Scripts/DCSUDPPositionDataExport.lua') --<-- add this line
 ```
