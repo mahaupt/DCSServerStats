@@ -1,8 +1,5 @@
 # DCSServerStats
 
-If you like this Program and want to see more cool stuff, please consider a donation :)
-
-[![Paypal Donate](https://www.paypalobjects.com/en_US/DE/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AM7K6U4ELAFBA)
 
 
 **This Program exports Events from DCS Servers to a SQL Database**
