@@ -17,7 +17,7 @@
 	// Github Project: https://github.com/cbacon93/DCSServerStats
 	
 	$PASSWORD = "secretpassword"; //password for data transmission
-	$UPLOAD_PASSWORD = "secretpassword"; //password for /upload/index.php
+	$UPLOAD_PASSWORD = "secretpassword"; //upload password for the test admin page
 	
 	$MYSQL_HOST = "127.0.0.1";
 	$MYSQL_USER = "root";
