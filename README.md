@@ -64,7 +64,3 @@ You can use the xml uploader to upload your as xml exported flights from Tacview
 You can use this tool with multiple servers
 To use this program properly, you need a separate event table for each of your server.
 Simply copy the entry.php and set at the beginning of the file $OVERRIDE_EVENT_TABLE to the name of your separate event table. You also need the java program running on each server.
-
-
-## How it works
-The lua scripts get the raw dcs events from the game. It sends its data to a queue manager (Java program) who redirects all data to a php script (entry.php). This php script puts the raw event data into the sql database. To get actual useful information about the flight (takeoff, landing time, flight time, kills, etc) the raw dcs events are processed in the cron.php either directly when calling entry.php or through a cronjob. 
