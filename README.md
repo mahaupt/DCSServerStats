@@ -44,7 +44,7 @@ dofile(lfs.writedir()..'Scripts/DCSUDPPositionDataExport.lua') --<-- add this li
 4. Move all PHP Files on your Webserver where your Database is running. Make sure you have the PHP and MySQLi extension installed.
 5. Setup the Database with the DCSServerStats.sql file
 6. Edit config.inc.php, set the user and the passwort for the database access.
-7. Create a .bat or .sh file to run the java program. The password must be the same as $PASSWORD in your php file
+7. Create a .bat or .sh file to run the java program. The password must be the same as $PASSWORD in your config.inc.php file
 ```sh
 # java -jar DCSServerStats.jar [BindIP for DCS UDP packets] [Port] [URL to entry.php] [password] 
 
@@ -63,4 +63,4 @@ You can use the xml uploader to upload your as xml exported flights from Tacview
 ## Using multiple servers
 You can use this tool with multiple servers
 To use this program properly, you need a separate event table for each of your server.
-Simply copy the entry.php and set at the beginning of the file $OVERRIDE_EVENT_TABLE to the name of your separate event table
+Simply copy the entry.php and set at the beginning of the file $OVERRIDE_EVENT_TABLE to the name of your separate event table. You also need the java program running on each server.

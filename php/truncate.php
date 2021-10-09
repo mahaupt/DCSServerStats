@@ -25,7 +25,7 @@
 	
 	//CLI Mode Only !!!
 	if (!isset($argc) || isset($_SERVER['REMOTE_ADDR'])) {
-		//die("CLI Only!");
+		die("CLI Only!");
 	}
 	
 	//establish database connection
