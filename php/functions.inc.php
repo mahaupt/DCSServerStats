@@ -20,7 +20,7 @@
 class SimStats {
 	protected $mysqli;
 	
-	public function SimStats(mysqli $mysqli) {
+	public function __construct(mysqli $mysqli) {
 		$this->mysqli = $mysqli;
 	}
 	
