@@ -109,7 +109,7 @@ public class DCSServerStats {
 			
 			
 			//url data
-			URL obj = new URL(url);
+			URL obj = new URI(url).toURL(); //JDK20 update, old: new URL(url);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
 			//add reuqest header
