@@ -86,7 +86,7 @@ public class DCSServerStats {
 			while(true) {
 				try {
 					sendToDatabase();
-					sleep(5000);
+					sleep(10000);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -109,10 +109,10 @@ public class DCSServerStats {
 			
 			
 			//url data
-			URL obj = new URL(url);
+			URL obj = new URI(url).toURL(); //new URL(url);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-			//add reuqest header
+			//add request header
 			con.setRequestMethod("POST");
 			con.setRequestProperty("User-Agent", "Mozilla/5.0");
 			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
@@ -120,7 +120,7 @@ public class DCSServerStats {
 			String urlParameters = "pw=" + pw;
 			
 			int evts = 0;
-			while(eventQueue.size() > 0 && evts < 100) {
+			while(eventQueue.size() > 0 && evts < 10000) {
 				String sentence = eventQueue.poll();
 				
 				//split data
