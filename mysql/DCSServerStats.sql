@@ -1,42 +1,53 @@
--- --------------------------------------------------------
--- Verkkotietokone:              192.168.2.29
--- Palvelinversio:               10.5.13-MariaDB - MariaDB Server
--- Server OS:                    Linux
--- HeidiSQL Versio:              10.2.0.5599
--- --------------------------------------------------------
+-- phpMyAdmin SQL Dump
+-- version 4.5.2
+-- http://www.phpmyadmin.net
+--
+-- Host: localhost
+-- Erstellungszeit: 07. Mai 2016 um 14:17
+-- Server-Version: 10.1.10-MariaDB
+-- PHP-Version: 5.6.19
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
+--
+-- Datenbank: `DCSServerStats`
+--
 
--- Dumping database structure for dcstat
-CREATE DATABASE IF NOT EXISTS `dcstat` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci */;
-USE `dcstat`;
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.aircrafts
-CREATE TABLE IF NOT EXISTS `aircrafts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `aircrafts`
+--
+
+CREATE TABLE `aircrafts` (
+  `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `flights` int(11) NOT NULL DEFAULT 0,
-  `flighttime` int(11) NOT NULL DEFAULT 0,
-  `ejects` int(11) NOT NULL DEFAULT 0,
-  `crashes` int(11) NOT NULL DEFAULT 0,
-  `hits` int(11) NOT NULL DEFAULT 0,
-  `shots` int(11) NOT NULL DEFAULT 0,
-  `kills` int(11) NOT NULL DEFAULT 0,
-  `inc_hits` int(11) NOT NULL DEFAULT 0,
-  `inc_kills` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+  `flights` int(11) NOT NULL DEFAULT '0',
+  `flighttime` int(11) NOT NULL DEFAULT '0',
+  `ejects` int(11) NOT NULL DEFAULT '0',
+  `crashes` int(11) NOT NULL DEFAULT '0',
+  `hits` int(11) NOT NULL DEFAULT '0',
+  `shots` int(11) NOT NULL DEFAULT '0',
+  `kills` int(11) NOT NULL DEFAULT '0',
+  `inc_hits` int(11) NOT NULL DEFAULT '0',
+  `inc_kills` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.dcs_events
-CREATE TABLE IF NOT EXISTS `dcs_events` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `dcs_events`
+--
+
+CREATE TABLE `dcs_events` (
+  `id` int(11) NOT NULL,
   `time` bigint(20) NOT NULL,
   `missiontime` bigint(20) NOT NULL,
   `event` varchar(255) NOT NULL,
@@ -51,26 +62,30 @@ CREATE TABLE IF NOT EXISTS `dcs_events` (
   `TargetCoa` varchar(255) NOT NULL,
   `TargetGroupCat` varchar(255) NOT NULL,
   `TargetType` varchar(255) NOT NULL,
-  `TargetPlayer` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=346 DEFAULT CHARSET=latin1;
+  `TargetPlayer` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.dcs_parser_log
-CREATE TABLE IF NOT EXISTS `dcs_parser_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `dcs_parser_log`
+--
+
+CREATE TABLE `dcs_parser_log` (
+  `id` int(11) NOT NULL,
   `time` int(11) NOT NULL,
   `durationms` int(11) NOT NULL,
-  `events` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=307 DEFAULT CHARSET=latin1;
+  `events` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.flights
-CREATE TABLE IF NOT EXISTS `flights` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `flights`
+--
+
+CREATE TABLE `flights` (
+  `id` int(11) NOT NULL,
   `pilotid` int(11) NOT NULL,
   `aircraftid` int(11) NOT NULL,
   `takeofftime` int(11) NOT NULL,
@@ -80,75 +95,83 @@ CREATE TABLE IF NOT EXISTS `flights` (
   `duration` int(11) NOT NULL,
   `coalition` varchar(255) NOT NULL,
   `endofflighttype` varchar(255) NOT NULL DEFAULT 'landing',
-  `raw_id` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
+  `raw_id` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.hitsshotskills
-CREATE TABLE IF NOT EXISTS `hitsshotskills` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `hitsshotskills`
+--
+
+CREATE TABLE `hitsshotskills` (
+  `id` int(11) NOT NULL,
   `initiatorPid` int(11) NOT NULL,
   `initiatorAcid` int(11) NOT NULL,
   `initiatorCoa` varchar(255) NOT NULL,
   `time` int(11) NOT NULL,
   `missiontime` int(11) NOT NULL,
-  `targetPid` int(11) NOT NULL DEFAULT 0,
-  `targetAcid` int(11) NOT NULL DEFAULT 0,
+  `targetPid` int(11) NOT NULL DEFAULT '0',
+  `targetAcid` int(11) NOT NULL DEFAULT '0',
   `targetCoa` varchar(255) NOT NULL DEFAULT '',
   `weaponid` int(11) NOT NULL,
   `type` varchar(255) NOT NULL,
-  `target_raw_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=latin1;
+  `target_raw_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.pilots
-CREATE TABLE IF NOT EXISTS `pilots` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `pilots`
+--
+
+CREATE TABLE `pilots` (
+  `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `disp_name` varchar(255) NOT NULL,
-  `flighttime` int(11) NOT NULL DEFAULT 0,
-  `flights` int(11) NOT NULL DEFAULT 0,
-  `crashes` int(11) NOT NULL DEFAULT 0,
-  `ejects` int(11) NOT NULL DEFAULT 0,
-  `shots` int(11) NOT NULL DEFAULT 0,
-  `hits` int(11) NOT NULL DEFAULT 0,
-  `kills` int(11) NOT NULL DEFAULT 0,
-  `inc_hits` int(11) NOT NULL DEFAULT 0,
-  `inc_kills` int(11) NOT NULL DEFAULT 0,
-  `lastactive` int(11) NOT NULL DEFAULT 0,
-  `online` tinyint(1) NOT NULL DEFAULT 0,
-  `show_kills` tinyint(1) NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+  `flighttime` int(11) NOT NULL DEFAULT '0',
+  `flights` int(11) NOT NULL DEFAULT '0',
+  `crashes` int(11) NOT NULL DEFAULT '0',
+  `ejects` int(11) NOT NULL DEFAULT '0',
+  `shots` int(11) NOT NULL DEFAULT '0',
+  `hits` int(11) NOT NULL DEFAULT '0',
+  `kills` int(11) NOT NULL DEFAULT '0',
+  `inc_hits` int(11) NOT NULL DEFAULT '0',
+  `inc_kills` int(11) NOT NULL DEFAULT '0',
+  `lastactive` int(11) NOT NULL DEFAULT '0',
+  `online` tinyint(1) NOT NULL DEFAULT '0',
+  `show_kills` tinyint(1) NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.pilot_aircrafts
-CREATE TABLE IF NOT EXISTS `pilot_aircrafts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `pilot_aircrafts`
+--
+
+CREATE TABLE `pilot_aircrafts` (
+  `id` int(11) NOT NULL,
   `pilotid` int(11) NOT NULL,
   `aircraftid` int(11) NOT NULL,
-  `time` int(11) NOT NULL DEFAULT 0,
-  `flights` int(11) NOT NULL DEFAULT 0,
-  `crashes` int(11) NOT NULL DEFAULT 0,
-  `ejects` int(11) NOT NULL DEFAULT 0,
-  `shots` int(11) NOT NULL DEFAULT 0,
-  `hits` int(11) NOT NULL DEFAULT 0,
-  `kills` int(11) NOT NULL DEFAULT 0,
-  `inc_hits` int(11) NOT NULL DEFAULT 0,
-  `inc_kills` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
+  `time` int(11) NOT NULL DEFAULT '0',
+  `flights` int(11) NOT NULL DEFAULT '0',
+  `crashes` int(11) NOT NULL DEFAULT '0',
+  `ejects` int(11) NOT NULL DEFAULT '0',
+  `shots` int(11) NOT NULL DEFAULT '0',
+  `hits` int(11) NOT NULL DEFAULT '0',
+  `kills` int(11) NOT NULL DEFAULT '0',
+  `inc_hits` int(11) NOT NULL DEFAULT '0',
+  `inc_kills` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.position_data
-CREATE TABLE IF NOT EXISTS `position_data` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `position_data`
+--
+
+CREATE TABLE `position_data` (
+  `id` int(11) NOT NULL,
   `pilotid` int(11) NOT NULL,
   `aircraftid` int(11) NOT NULL,
   `lat` double NOT NULL,
@@ -156,25 +179,131 @@ CREATE TABLE IF NOT EXISTS `position_data` (
   `alt` double NOT NULL,
   `time` int(11) NOT NULL,
   `missiontime` int(11) NOT NULL,
-  `raw_id` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1121 DEFAULT CHARSET=latin1;
+  `raw_id` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+-- --------------------------------------------------------
 
--- Dumping structure for taulu dcstat.weapons
-CREATE TABLE IF NOT EXISTS `weapons` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+--
+-- Tabellenstruktur für Tabelle `weapons`
+--
+
+CREATE TABLE `weapons` (
+  `id` int(11) NOT NULL,
   `type` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `shots` int(11) NOT NULL DEFAULT 0,
-  `hits` int(11) NOT NULL DEFAULT 0,
-  `kills` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+  `shots` int(11) NOT NULL DEFAULT '0',
+  `hits` int(11) NOT NULL DEFAULT '0',
+  `kills` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tietojen vientiä ei oltu valittu.
+--
+-- Indizes der exportierten Tabellen
+--
 
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
+--
+-- Indizes für die Tabelle `aircrafts`
+--
+ALTER TABLE `aircrafts`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `dcs_events`
+--
+ALTER TABLE `dcs_events`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `dcs_parser_log`
+--
+ALTER TABLE `dcs_parser_log`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `flights`
+--
+ALTER TABLE `flights`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `hitsshotskills`
+--
+ALTER TABLE `hitsshotskills`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `pilots`
+--
+ALTER TABLE `pilots`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `pilot_aircrafts`
+--
+ALTER TABLE `pilot_aircrafts`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `position_data`
+--
+ALTER TABLE `position_data`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `weapons`
+--
+ALTER TABLE `weapons`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT für exportierte Tabellen
+--
+
+--
+-- AUTO_INCREMENT für Tabelle `aircrafts`
+--
+ALTER TABLE `aircrafts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+--
+-- AUTO_INCREMENT für Tabelle `dcs_events`
+--
+ALTER TABLE `dcs_events`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT für Tabelle `dcs_parser_log`
+--
+ALTER TABLE `dcs_parser_log`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=307;
+--
+-- AUTO_INCREMENT für Tabelle `flights`
+--
+ALTER TABLE `flights`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+--
+-- AUTO_INCREMENT für Tabelle `hitsshotskills`
+--
+ALTER TABLE `hitsshotskills`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
+--
+-- AUTO_INCREMENT für Tabelle `pilots`
+--
+ALTER TABLE `pilots`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+--
+-- AUTO_INCREMENT für Tabelle `pilot_aircrafts`
+--
+ALTER TABLE `pilot_aircrafts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+--
+-- AUTO_INCREMENT für Tabelle `position_data`
+--
+ALTER TABLE `position_data`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1121;
+--
+-- AUTO_INCREMENT für Tabelle `weapons`
+--
+ALTER TABLE `weapons`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

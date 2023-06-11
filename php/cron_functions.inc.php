@@ -21,7 +21,7 @@ class DCSStatsCron {
 	private $mysqli;
 	private $event_table;
 	
-	public function __construct(mysqli $mysqli, $event_table) {
+	public function DCSStatsCron(mysqli $mysqli, $event_table) {
 		$this->mysqli = $mysqli;
 		$this->event_table = $event_table;
 	}
