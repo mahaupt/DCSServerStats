@@ -604,7 +604,7 @@ class SimStats {
 				//comma separator
 				if ($aid != 0) {$json .=  ",";}
 				
-				$json .= "{\"lat\": " . $pt->lat . ",\"lng\": " . $pt->lon . "}";
+				$json .= "[" . $pt->lat . ", " . $pt->lon . "]";
 			}
 			$json .= "]}\n";
 	
@@ -631,7 +631,7 @@ class SimStats {
 				//comma separator
 				if ($aid != 0) {$json .=  ",";}
 				
-				$json .= "{\"lat\": " . $pt->lat . ",\"lng\": " . $pt->lon . "}";
+				$json .= "[" . $pt->lat . ", " . $pt->lon . "]";
 			}
 			$json .= "]}\n";
 		

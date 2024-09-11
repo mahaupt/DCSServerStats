@@ -124,58 +124,28 @@ function loadFlightPathMap() {
 
 
 function addMapMarker(lat, lng, name, text, pathline, show_always) {
-	// TODO: update this function to leaflet
-	/*var infowindow = new google.maps.InfoWindow({
-    	content: text
-  	});
+	// TODO: optimize this function
+
+  // 	var flightPath = new google.maps.Polyline({
+	// 	path: pathline,
+	// 	geodesic: true,
+	// 	strokeColor: '#FF0000',
+	// 	strokeOpacity: 1.0,
+	// 	strokeWeight: 2
+	// });
+	L.polyline(pathline, {color: '#FF0000', weight: 2, opacity: 1.0}).addTo(map);
   	
-  	var flightPath = new google.maps.Polyline({
-		path: pathline,
-		geodesic: true,
-		strokeColor: '#FF0000',
-		strokeOpacity: 1.0,
-		strokeWeight: 2
-	});
-  	
-	var marker = new google.maps.Marker({
-		map: map,
-		position: {lat: lat, lng: lng},
-		title: name
-	});
-	
-	marker.addListener('click', function() {
-    	infowindow.open(map, marker);
-  	});
-  	
-  	if (!show_always) {
-	  	marker.addListener('mouseover', function() {
-		  	flightPath.setMap(map);
-	  	});
-	  	
-	  	marker.addListener('mouseout', function() {
-		  	flightPath.setMap(null);
-	  	});
-  	} else {
-	  	flightPath.setMap(map);
-  	}
-  	
-  	markers.push(marker);*/
+	var marker = L.marker([lat, lng], {title: name});
+	marker.addTo(map);
+	marker.bindPopup(text);
+	if (show_always) marker.openPopup();
+	markers.push(marker);
 }
 
-
-// Sets the map on all markers in the array.
-function setMapOnAll(map) {
-	// TODO: update this function to leaflet
-	/*for (var i = 0; i < markers.length; i++) {
-		markers[i].setMap(map);
-	}*/
-}
-
-// Deletes all markers in the array by removing references to them.
+// Deletes all markers in the array from the map
 function deleteMarkers() {
-	// TODO: update this function to leaflet
-	/*
-	setMapOnAll(null);
+	for (var i = 0; i < markers.length; i++) {
+		map.removeLayer(markers[i])
+	}
 	markers = [];
-	*/
 }
