@@ -123,22 +123,14 @@ function loadFlightPathMap() {
 }
 
 
-function addMapMarker(lat, lng, name, text, pathline, show_always) {
+function addMapMarker(lat, lng, name, text, pathline, center_map_around) {
 	// TODO: optimize this function
-
-  // 	var flightPath = new google.maps.Polyline({
-	// 	path: pathline,
-	// 	geodesic: true,
-	// 	strokeColor: '#FF0000',
-	// 	strokeOpacity: 1.0,
-	// 	strokeWeight: 2
-	// });
-	L.polyline(pathline, {color: '#FF0000', weight: 2, opacity: 1.0}).addTo(map);
+	var polyline = L.polyline(pathline, {color: '#FF0000', weight: 2, opacity: 0.5}).addTo(map);
+	if (center_map_around) map.fitBounds(polyline.getBounds(), {padding: [10, 10]});
   	
 	var marker = L.marker([lat, lng], {title: name});
 	marker.addTo(map);
 	marker.bindPopup(text);
-	if (show_always) marker.openPopup();
 	markers.push(marker);
 }
 

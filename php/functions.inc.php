@@ -547,34 +547,19 @@ class SimStats {
 	
 	public function echoLiveRadarMapScript() {
 		echo "<a href='#' onclick=\"map.setView([42.858056, 41.128056], 7);\">Caucasus</a> - ";
-		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a>";
+		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a> - ";
+		echo "<a href='#' onclick=\"map.setView([35.597889, 37.489861], 7);\">Syria</a>";
 		echo "<br><br>";
 		
 		echo "<div id=\"map\"></div>";
 		echo "<script src=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js\" integrity=\"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=\" crossorigin=\"\"></script>";
 		echo "<script>initLiveRadarMap();</script>";
-		// setting markers belongs into tools.js to enable live updates live updates happen
-    /*$result = $this->mysqli->query("SELECT a.name, p.lat, p.lon, p.alt, MAX(p.time) AS TIME, p.raw_id, i.disp_name 
-		FROM position_data p 
-		JOIN aircrafts a ON p.aircraftid = a.id JOIN pilots i ON i.id = p.pilotid 
-		WHERE a.name IS NOT NULL AND a.name <> '' 
-		GROUP BY p.aircraftid, p.raw_id");
-
-    if ($row = $result->fetch_object()) {
-        // Use do...while to loop through the results
-        do {
-            echo "const id" . $row->raw_id ." = L.latLng([" . $row->lat . "," . $row->lon ."])\n";
-            echo "L.marker(id" . $row->raw_id .").addTo(map)\n";
-        // Fetch the next row
-        $row = $result->fetch_assoc();
-        }
-        while ($row = $result->fetch_object());
-    }*/
 	}
 	
 	public function echoMapScriptForFlight($flightid) {
 		echo "<a href='#' onclick=\"map.setView([42.858056, 41.128056], 7);\">Caucasus</a> - ";
-		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a>";
+		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a> - ";
+		echo "<a href='#' onclick=\"map.setView([35.597889, 37.489861], 7);\">Syria</a>";
 		echo "<br><br>";
 
 		echo "<div id=\"map\"></div>";
