@@ -20,7 +20,7 @@
 class SimStats {
 	protected $mysqli;
 	
-	public function SimStats(mysqli $mysqli) {
+	public function __construct(mysqli $mysqli) {
 		$this->mysqli = $mysqli;
 	}
 	
@@ -546,66 +546,40 @@ class SimStats {
 	
 	
 	public function echoLiveRadarMapScript() {
-		echo "<br>
-		<h2> Dont work yet </h2>
-		<a href='#' onclick=\"setMapCenter([42.858056, 41.128056]);setMapZoom(7);\">Caucasus</a> - 
-		<a href='#' onclick=\"setMapCenter([38.18638677, -115.16967773]);setMapZoom(7);\">Nevada</a>
-		<br>";
+		echo "<a href='#' onclick=\"map.setView([42.858056, 41.128056], 7);\">Caucasus</a> - ";
+		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a>";
+		echo "<br><br>";
 		
-		echo "<div id=\"map\" style=\"width: 600px; height: 600px;\"></div>";
-		// Leaflet does not require an API key
-		echo "<script src=\"https://unpkg.com/leaflet/dist/leaflet.js\"></script>";
-		echo "<script>";
-        echo "var map = L.map('map').setView([42.858056, 41.128056], 7);\n"; // Initial map center and zoom level
-        $result = $this->mysqli->query("SELECT a.name, p.lat, p.lon, p.alt, MAX(p.time) AS TIME, p.raw_id, i.disp_name 
+		echo "<div id=\"map\"></div>";
+		echo "<script src=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js\" integrity=\"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=\" crossorigin=\"\"></script>";
+		echo "<script>initLiveRadarMap();</script>";
+		// setting markers belongs into tools.js to enable live updates live updates happen
+    /*$result = $this->mysqli->query("SELECT a.name, p.lat, p.lon, p.alt, MAX(p.time) AS TIME, p.raw_id, i.disp_name 
 		FROM position_data p 
 		JOIN aircrafts a ON p.aircraftid = a.id JOIN pilots i ON i.id = p.pilotid 
 		WHERE a.name IS NOT NULL AND a.name <> '' 
 		GROUP BY p.aircraftid, p.raw_id");
 
-        if ($row = $result->fetch_object()) {
-            // Use do...while to loop through the results
-            do {
-                echo "const id" . $row->raw_id ." = L.latLng([" . $row->lat . "," . $row->lon ."])\n";
-                echo "L.marker(id" . $row->raw_id .").addTo(map)\n";
-            // Fetch the next row
-            $row = $result->fetch_assoc();
-            }
-            while ($row = $result->fetch_object());
+    if ($row = $result->fetch_object()) {
+        // Use do...while to loop through the results
+        do {
+            echo "const id" . $row->raw_id ." = L.latLng([" . $row->lat . "," . $row->lon ."])\n";
+            echo "L.marker(id" . $row->raw_id .").addTo(map)\n";
+        // Fetch the next row
+        $row = $result->fetch_assoc();
         }
-		echo "const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            minZoom: 0,
-            maxZoom: 17,
-			//bounds,
-			//edgeBufferTiles: 1,
-			attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors',
-        }).addTo(map);";
-		echo "</script>";
-	echo "<br> TEST <br>";
+        while ($row = $result->fetch_object());
+    }*/
 	}
 	
 	public function echoMapScriptForFlight($flightid) {
-		
-		
-//		echo "<br>
-//		<a href='#' onclick=\"setMapCenter([42.858056, 41.128056]);setMapZoom(6);\">Caucasus</a> -
-//		<a href='#' onclick=\"setMapCenter([38.18638677, -115.16967773]);setMapZoom(6);\">Nevada</a>
-//		<br>";
-		
-//		echo "<div id=\"map\" style=\"width: 600px; height: 400px;\"></div>";
-//		echo "<script>setFlightId(" . $flightid . ");setMapZoom(6);</script>";
-		// Leaflet does not require an API key
-//		echo "<script src=\"https://unpkg.com/leaflet/dist/leaflet.js\"></script>";
-		// Initialize the map and set flight path
-//		echo "<script>";
+		echo "<a href='#' onclick=\"map.setView([42.858056, 41.128056], 7);\">Caucasus</a> - ";
+		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a>";
+		echo "<br><br>";
 
-//		echo "var map = L.map('map').setView([42.858056, 41.128056], 6);"; // Initial map center and zoom level
-//		echo "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {";
-//		echo "attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors'";
-//		echo "}).addTo(map);";
-//		echo "setFlightPath(map, " . $flightid . ");"; // Function to set flight path
-//		echo "</script>";
-		
+		echo "<div id=\"map\"></div>";
+		echo "<script src=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js\" integrity=\"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=\" crossorigin=\"\"></script>";
+		echo "<script>setFlightId(" . $flightid . ");initFlightPathMap();</script>";		
 	}
 	
 	public function getLiveRadarMapInfoJSON() {
