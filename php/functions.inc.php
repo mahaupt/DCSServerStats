@@ -20,7 +20,7 @@
 class SimStats {
 	protected $mysqli;
 	
-	public function SimStats(mysqli $mysqli) {
+	public function __construct(mysqli $mysqli) {
 		$this->mysqli = $mysqli;
 	}
 	
@@ -238,18 +238,18 @@ class SimStats {
 	
 	
 	public function quicksort($seq, $key) {
-	    if(!count($seq)) return $seq;
+		if(!count($seq)) return $seq;
 		$pivot= $seq[0];
-	    $low = array();
-	    $high = array();
-	    $length = count($seq);
-	    for($i=1; $i < $length; $i++) {
-	        if($seq[$i]->$key <= $pivot->$key) {
-	            $low [] = $seq[$i];
-	        } else {
-	            $high[] = $seq[$i];
-	        }
-	    }
+		$low = array();
+		$high = array();
+		$length = count($seq);
+		for($i=1; $i < $length; $i++) {
+			if($seq[$i]->$key <= $pivot->$key) {
+				$low [] = $seq[$i];
+			} else {
+				$high[] = $seq[$i];
+			}
+		}
 		return array_merge($this->quicksort($low, $key), array($pivot), $this->quicksort($high, $key));
 	}
 	
@@ -546,20 +546,40 @@ class SimStats {
 	
 	
 	public function echoLiveRadarMapScript() {
-		echo "<br><a href='#' onclick=\"setMapCenter({lat: 42.858056, lng: 41.128056});setMapZoom(7);flushMapChanges();\">Caucasus</a> - <a href='#' onclick=\"setMapCenter({lat: 38.18638677, lng: -115.16967773});setMapZoom(7);flushMapChanges();\">Nevada</a><br>";
+		echo "<a href='#' onclick=\"map.setView([42.858056, 41.128056], 7);\">Caucasus</a> - ";
+		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a>";
+		echo "<br><br>";
 		
 		echo "<div id=\"map\"></div>";
-		echo "<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyBZoFosVL27IeHx57Wujg-v_aW3slJWItA&callback=initLiveRadarMap\"
-	        async defer></script>";
+		echo "<script src=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js\" integrity=\"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=\" crossorigin=\"\"></script>";
+		echo "<script>initLiveRadarMap();</script>";
+		// setting markers belongs into tools.js to enable live updates live updates happen
+    /*$result = $this->mysqli->query("SELECT a.name, p.lat, p.lon, p.alt, MAX(p.time) AS TIME, p.raw_id, i.disp_name 
+		FROM position_data p 
+		JOIN aircrafts a ON p.aircraftid = a.id JOIN pilots i ON i.id = p.pilotid 
+		WHERE a.name IS NOT NULL AND a.name <> '' 
+		GROUP BY p.aircraftid, p.raw_id");
+
+    if ($row = $result->fetch_object()) {
+        // Use do...while to loop through the results
+        do {
+            echo "const id" . $row->raw_id ." = L.latLng([" . $row->lat . "," . $row->lon ."])\n";
+            echo "L.marker(id" . $row->raw_id .").addTo(map)\n";
+        // Fetch the next row
+        $row = $result->fetch_assoc();
+        }
+        while ($row = $result->fetch_object());
+    }*/
 	}
 	
 	public function echoMapScriptForFlight($flightid) {
-		echo "<br><a href='#' onclick=\"setMapCenter({lat: 42.858056, lng: 41.128056});setMapZoom(6);flushMapChanges();\">Caucasus</a> - <a href='#' onclick=\"setMapCenter({lat: 38.18638677, lng: -115.16967773});setMapZoom(6);flushMapChanges();\">Nevada</a><br>";
-		
-		echo "<div id=\"map\" style=\"width: 600px; height: 400px;\"></div>";
-		echo "<script>setFlightId(" . $flightid . ");setMapZoom(6);</script>";
-		echo "<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyBZoFosVL27IeHx57Wujg-v_aW3slJWItA&callback=initFlightPathMap\"
-	        async defer></script>";
+		echo "<a href='#' onclick=\"map.setView([42.858056, 41.128056], 7);\">Caucasus</a> - ";
+		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a>";
+		echo "<br><br>";
+
+		echo "<div id=\"map\"></div>";
+		echo "<script src=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js\" integrity=\"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=\" crossorigin=\"\"></script>";
+		echo "<script>setFlightId(" . $flightid . ");initFlightPathMap();</script>";		
 	}
 	
 	public function getLiveRadarMapInfoJSON() {
