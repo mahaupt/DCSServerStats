@@ -238,18 +238,18 @@ class SimStats {
 	
 	
 	public function quicksort($seq, $key) {
-	    if(!count($seq)) return $seq;
+		if(!count($seq)) return $seq;
 		$pivot= $seq[0];
-	    $low = array();
-	    $high = array();
-	    $length = count($seq);
-	    for($i=1; $i < $length; $i++) {
-	        if($seq[$i]->$key <= $pivot->$key) {
-	            $low [] = $seq[$i];
-	        } else {
-	            $high[] = $seq[$i];
-	        }
-	    }
+		$low = array();
+		$high = array();
+		$length = count($seq);
+		for($i=1; $i < $length; $i++) {
+			if($seq[$i]->$key <= $pivot->$key) {
+				$low [] = $seq[$i];
+			} else {
+				$high[] = $seq[$i];
+			}
+		}
 		return array_merge($this->quicksort($low, $key), array($pivot), $this->quicksort($high, $key));
 	}
 	
@@ -546,20 +546,25 @@ class SimStats {
 	
 	
 	public function echoLiveRadarMapScript() {
-		echo "<br><a href='#' onclick=\"setMapCenter({lat: 42.858056, lng: 41.128056});setMapZoom(7);flushMapChanges();\">Caucasus</a> - <a href='#' onclick=\"setMapCenter({lat: 38.18638677, lng: -115.16967773});setMapZoom(7);flushMapChanges();\">Nevada</a><br>";
+		echo "<a href='#' onclick=\"map.setView([42.858056, 41.128056], 7);\">Caucasus</a> - ";
+		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a> - ";
+		echo "<a href='#' onclick=\"map.setView([35.597889, 37.489861], 7);\">Syria</a>";
+		echo "<br><br>";
 		
 		echo "<div id=\"map\"></div>";
-		echo "<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyBZoFosVL27IeHx57Wujg-v_aW3slJWItA&callback=initLiveRadarMap\"
-	        async defer></script>";
+		echo "<script src=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js\" integrity=\"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=\" crossorigin=\"\"></script>";
+		echo "<script>initLiveRadarMap();</script>";
 	}
 	
 	public function echoMapScriptForFlight($flightid) {
-		echo "<br><a href='#' onclick=\"setMapCenter({lat: 42.858056, lng: 41.128056});setMapZoom(6);flushMapChanges();\">Caucasus</a> - <a href='#' onclick=\"setMapCenter({lat: 38.18638677, lng: -115.16967773});setMapZoom(6);flushMapChanges();\">Nevada</a><br>";
-		
-		echo "<div id=\"map\" style=\"width: 600px; height: 400px;\"></div>";
-		echo "<script>setFlightId(" . $flightid . ");setMapZoom(6);</script>";
-		echo "<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyBZoFosVL27IeHx57Wujg-v_aW3slJWItA&callback=initFlightPathMap\"
-	        async defer></script>";
+		echo "<a href='#' onclick=\"map.setView([42.858056, 41.128056], 7);\">Caucasus</a> - ";
+		echo "<a href='#' onclick=\"map.setView([38.18638677, -115.16967773], 7);\">Nevada</a> - ";
+		echo "<a href='#' onclick=\"map.setView([35.597889, 37.489861], 7);\">Syria</a>";
+		echo "<br><br>";
+
+		echo "<div id=\"map\"></div>";
+		echo "<script src=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js\" integrity=\"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=\" crossorigin=\"\"></script>";
+		echo "<script>setFlightId(" . $flightid . ");initFlightPathMap();</script>";		
 	}
 	
 	public function getLiveRadarMapInfoJSON() {
@@ -584,7 +589,7 @@ class SimStats {
 				//comma separator
 				if ($aid != 0) {$json .=  ",";}
 				
-				$json .= "{\"lat\": " . $pt->lat . ",\"lng\": " . $pt->lon . "}";
+				$json .= "[" . $pt->lat . ", " . $pt->lon . "]";
 			}
 			$json .= "]}\n";
 	
@@ -611,7 +616,7 @@ class SimStats {
 				//comma separator
 				if ($aid != 0) {$json .=  ",";}
 				
-				$json .= "{\"lat\": " . $pt->lat . ",\"lng\": " . $pt->lon . "}";
+				$json .= "[" . $pt->lat . ", " . $pt->lon . "]";
 			}
 			$json .= "]}\n";
 		
